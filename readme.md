@@ -33,3 +33,52 @@ Jagantara delivers end‑to‑end, on‑chain insurance:
 - Conservative vault strategy module to help sustain reserves
 
 ---
+
+
+## Monorepo Structure
+- Jagantara — Next.js 14 app (jagantara)
+- indexer — Ponder indexer (GraphQL API)
+- smart-contract — Solidity contracts (Foundry)
+
+
+---
+
+## Quickstart
+Prerequisites: Node.js 18+, npm, Foundry (for contracts), Git.
+
+### 1) Environment
+- Jagantara: jaga/.env.local (already wired)
+- Indexer: indexer/.env (already wired)
+  - Ensure DATABASE_SCHEMA is set (e.g., `DATABASE_SCHEMA=app`)
+
+### 2) Run the Indexer (GraphQL)
+```bash
+cd indexer
+npm install
+# Load env, set schema, and start
+set -a && . ./.env && set +a && DATABASE_SCHEMA=app npm run start
+```
+
+### 3) Run the Jagantara (Next.js)
+```bash
+cd jagantara
+npm install
+npm run dev
+# App: http://localhost:3000
+```
+
+### 4) Build Smart Contracts (Foundry)
+```bash
+cd smart-contract
+forge build
+forge test
+# Deploy example:
+# forge script script/DeployJaga.s.sol:DeployJaga --rpc-url $MANTLE_RPC --private-key $PK --broadcast --slow --legacy
+```
+
+---
+
+
+## License
+MIT 
+
