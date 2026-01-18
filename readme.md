@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="jaga/public/jagantara_icon.png" alt="Jaga logo" width="120" />
+  <img src="jagantara/public/jagantara_icon.png" alt="Jaga logo" width="120" />
 </p>
 
 
