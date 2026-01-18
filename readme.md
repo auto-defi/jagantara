@@ -35,16 +35,7 @@ Jagantara delivers end‑to‑end, on‑chain insurance:
 ---
 
 ## Deployed Contracts (Mantle Testnet)
-- InsuranceManager — `0xB73Ad4396797889D405D8F6Ff14a90F45Ee3549D`
-  - https://sepolia.mantlescan.xyz/address/0xB73Ad4396797889D405D8F6Ff14a90F45Ee3549D
-- JagaStake — `0x278298c9573c6C3cD2b84543FcE485e9a3ACc73D`
-  - https://sepolia.mantlescan.xyz/address/0x278298c9573c6C3cD2b84543FcE485e9a3ACc73D
-- JagaToken — `0xB6C7496676D6FcE9C4B6F3F5b67e3Ad9c7665a88`
-  - https://sepolia.mantlescan.xyz/address/0xB6C7496676D6FcE9C4B6F3F5b67e3Ad9c7665a88
-- DAOGovernance — `0x58F68667B751fAFd5E25F54E3ACc5dEA6d7A4e7F`
-  - https://sepolia.mantlescan.xyz/address/0x58F68667B751fAFd5E25F54E3ACc5dEA6d7A4e7F
-- ClaimManager — `0x5348e52294c56C39F0F1c880DbE3e74dA50c19b9`
-  - https://sepolia.mantlescan.xyz/address/0x5348e52294c56C39F0F1c880DbE3e74dA50c19b9
+- InsuranceManager,JagaStake, JagaToken, DAOGovernance and ClaimManager Deployed by wallet address 0xfae70639b30ab9b59a579fca17f3d4bd1e57a379 https://sepolia.mantlescan.xyz/address/0xfae70639b30ab9b59a579fca17f3d4bd1e57a379
 
 
 ---
