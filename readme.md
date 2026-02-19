@@ -29,7 +29,6 @@ On‑chain, DAO‑governed insurance that protects crypto users and protocols wi
   - Run the Frontend Jagantara (Next.js)
   - Build Smart Contracts (Foundry)
 - Addresses & Links
-- Pitch Deck
 - License
 
 ---
