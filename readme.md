@@ -174,7 +174,7 @@ User ── submitClaim(...) ─► DAOGovernance (BNB Smart Chain Testnet)
 Prerequisites: Node.js 18+, npm, Foundry (for contracts), Git.
 
 ```bash
-git clone https://github.com/auto-defi/jagantara
+git clone https://github.com/auto-defi/jagantara.git
 ```
 
 ### 1) Environment
