@@ -174,9 +174,13 @@ User ── submitClaim(...) ─► DAOGovernance (BNB Smart Chain Testnet)
 ## Quickstart
 Prerequisites: Node.js 18+, npm, Foundry (for contracts), Git.
 
+```bash
+git clone https://github.com/auto-defi/jagantara
+```
+
 ### 1) Environment
-- Jagantara: Jagantara/.env.local (already wired)
-- Indexer: indexer/.env (already wired)
+- Jagantara: Jagantara/.env.local 
+- Indexer: indexer/.env 
 
 ### 2) Run the Indexer (GraphQL)
 ```bash
