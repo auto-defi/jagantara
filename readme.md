@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/Jagantara/public/jagantara_icon.png" alt="Jagantara logo" width="120" />
+  <img src="https://github.com/auto-defi/jagantara/blob/main/jagantara/public/jagantara_icon.png" alt="Jagantara logo" width="120" />
 </p>
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0ea5e9.svg" alt="License: MIT" /></a>
