@@ -1,0 +1,340 @@
+@import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Space+Grotesk:wght@300..700&display=swap");
+@import "tw-animate-css";
+
+@layer base {
+  :root {
+    --text: #0e0514;
+    --background: #faf7fd;
+    --primary: #00095c;
+    --secondary: #b8dfff;
+    --accent: #578cff;
+    --gradient-primary: linear-gradient(135deg, #00095c 0%, #578cff 100%);
+    --gradient-secondary: linear-gradient(135deg, #b8dfff 0%, #faf7fd 100%);
+    --gradient-accent-soft: linear-gradient(120deg, #578cff 0%, #b8dfff 100%);
+    --gradient-accent-hard: linear-gradient(
+      120deg,
+      #0035a8 0%,
+      #578cff 50%,
+      #b8dfff 100%
+    );
+    --gradient-sheen: linear-gradient(
+      90deg,
+      #faf7fd 0%,
+      #b8dfff 50%,
+      #578cff 100%
+    );
+    --color-rewards: #22c55e; /* or any green you prefer */
+    --color-deposits: #3b82f6;
+    --third: #dbeafe; /* Light mode third (e.g., light blue-100) */
+    --gradient-third: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+  }
+
+  .dark {
+    --text: #f4ebfa;
+    --background: #09050e;
+    --primary: #a3acff;
+
+    --secondary: #002747;
+    --accent: #0035a8;
+    --gradient-primary: linear-gradient(135deg, #0035a8 0%, #a3acff 100%);
+    --gradient-secondary: linear-gradient(135deg, #002747 0%, #050208 100%);
+    --gradient-accent-soft: linear-gradient(120deg, #0035a8 0%, #002747 100%);
+    --gradient-accent-hard: linear-gradient(
+      120deg,
+      #000c3d 0%,
+      #0035a8 50%,
+      #a3acff 100%
+    );
+    --gradient-sheen: linear-gradient(
+      90deg,
+      #050208 0%,
+      #002747 50%,
+      #a3acff 100%
+    );
+    --third: #1e3a8a; /* Dark mode third (e.g., blue-900) */
+    --gradient-third: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    --color-rewards: #86efac; /* lighter green */
+    --color-deposits: #93c5fd;
+  }
+
+  /* Explicit font-face declarations for better weight support */
+  @font-face {
+    font-family: "Hanken Grotesk";
+    src: url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "Hanken Grotesk";
+    src: url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap");
+    font-weight: 100 900;
+    font-style: italic;
+    font-display: swap;
+  }
+}
+
+@keyframes glow-blue {
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3); /* Light blue */
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(0, 123, 255, 0.6),
+      /* Brighter blue */ 0 0 30px rgba(0, 123, 255, 0.4); /* Mid glow */
+  }
+}
+
+.glow-blue {
+  animation: glow-blue 2s ease-in-out infinite;
+}
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 150s linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 150s linear infinite;
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family:
+    "Hanken Grotesk",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  font-variation-settings: "wght" 400; /* Explicit weight for variable font */
+  overflow-x: hidden;
+  padding: 0;
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+}
+.arrow-animate-out {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.group:hover .arrow-animate-out {
+  opacity: 0;
+  transform: translate3d(8px, -8px, 0); /* Move up-right and fade out */
+}
+
+.arrow-animate-in {
+  opacity: 0;
+  transform: translate3d(-8px, 8px, 0); /* Start off-screen (bottom-left) */
+}
+
+.group:hover .arrow-animate-in {
+  opacity: 1;
+  transform: translate3d(0, 0, 0); /* Move into place */
+}
+
+/* Scrollbar width */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background-color: var(--secondary);
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+::-moz-selection {
+  color: var(--text);
+  background: var(--secondary);
+}
+
+::selection {
+  color: var(--text);
+  background: var(--secondary);
+}
+
+/* Font weight utilities - ensure they work with variable font */
+.font-thin {
+  font-weight: 100;
+  font-variation-settings: "wght" 100;
+}
+
+.font-extralight {
+  font-weight: 200;
+  font-variation-settings: "wght" 200;
+}
+
+.font-light {
+  font-weight: 300;
+  font-variation-settings: "wght" 300;
+}
+
+.font-normal {
+  font-weight: 400;
+  font-variation-settings: "wght" 400;
+}
+
+.font-medium {
+  font-weight: 500;
+  font-variation-settings: "wght" 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+  font-variation-settings: "wght" 600;
+}
+
+.font-bold {
+  font-weight: 700;
+  font-variation-settings: "wght" 700;
+}
+
+.font-extrabold {
+  font-weight: 800;
+  font-variation-settings: "wght" 800;
+}
+
+.font-black {
+  font-weight: 900;
+  font-variation-settings: "wght" 900;
+}
+
+.animated-gradient-text {
+  position: relative;
+  margin: 0 auto;
+  display: flex;
+  max-width: fit-content;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.25rem;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  transition: box-shadow 0.5s ease-out;
+  overflow: hidden;
+}
+
+.gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: 300% 100%;
+  animation: gradient linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.gradient-overlay::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #060010;
+  z-index: -1;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.text-content {
+  display: inline-block;
+  position: relative;
+  z-index: 2;
+  background-size: 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: gradient linear infinite;
+}
+/* In globals.css or inside layout.tsx <style> tag */
+
+.loading span {
+  width: 15px;
+  height: 15px;
+  margin: 0 5px;
+  background-color: var(--text);
+  border-radius: 50%;
+  display: inline-block;
+  animation: dots 2s infinite ease-in-out;
+}
+.loading span:nth-child(2) {
+  animation-delay: 0.4s;
+}
+.loading span:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+@keyframes dots {
+  50% {
+    opacity: 0;
+    transform: scale(0.7) translateY(10px);
+  }
+}
