@@ -1,0 +1,47 @@
+[network]
+name = "devnet"
+
+[network.devnet]
+name = "devnet"
+stacks_node = "http://localhost:20443"
+bitcoin_node = "http://devnet:devnet@localhost:18443"
+
+[accounts.deployer]
+mnemonic = "talk water garlic give screen truth angle ramp replace alarm wave giraffe"
+balance = 100_000_000_000_000
+
+[accounts.wallet_1]
+mnemonic = "reveal december lens unhappy cost swallow horror december pony note figure fantasy"
+balance = 100_000_000_000_000
+
+[accounts.wallet_2]
+mnemonic = "conduct front sure circle gap gadget trouble juice chimney marriage episode tooth"
+balance = 100_000_000_000_000
+
+[accounts.wallet_3]
+mnemonic = "just rifle before page this palace clever vendor merge phone custom oxygen"
+balance = 100_000_000_000_000
+
+[accounts.wallet_4]
+mnemonic = "tumble marine umbrella broom garbage offer sauce fiction give flame wait invite"
+balance = 100_000_000_000_000
+
+[accounts.wallet_5]
+mnemonic = "cave best erosion mix primary debate nature tail task tree talk rate"
+balance = 100_000_000_000_000
+
+[accounts.wallet_6]
+mnemonic = "lava infant coyote enforce sure message choose grace sorry gesture aisle rose"
+balance = 100_000_000_000_000
+
+[accounts.wallet_7]
+mnemonic = "daring vicious glare real illegal huge erode fitness canal prize senior cycle"
+balance = 100_000_000_000_000
+
+[accounts.wallet_8]
+mnemonic = "shrimp subway biology educate eyebrow day machine mother lawsuit fetch foot vocal"
+balance = 100_000_000_000_000
+
+[accounts.wallet_9]
+mnemonic = "level slab glass youth vanish maple monitor hour absent camera injury eternal"
+balance = 100_000_000_000_000

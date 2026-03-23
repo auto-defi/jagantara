@@ -1,0 +1,65 @@
+[project]
+name = "jagantara-stacks"
+description = "Jagantara - Decentralized Insurance on Stacks"
+authors = ["Jagantara Team"]
+telemetry = false
+cache_dir = "./.cache"
+requirements = []
+
+[contracts.jaga-token]
+path = "contracts/jaga-token.clar"
+depends_on = []
+
+[contracts.jaga-stake]
+path = "contracts/jaga-stake.clar"
+depends_on = []
+
+[contracts.insurance-manager]
+path = "contracts/insurance-manager.clar"
+depends_on = []
+
+[contracts.dao-governance]
+path = "contracts/dao-governance.clar"
+depends_on = []
+
+[contracts.claim-manager]
+path = "contracts/claim-manager.clar"
+depends_on = []
+
+[contracts.morpho-reinvest]
+path = "contracts/morpho-reinvest.clar"
+depends_on = []
+
+[repl]
+version = 2
+costs_version = 2
+
+[network.devnet]
+name = "devnet"
+stacks_node = "http://localhost:20443"
+bitcoin_node = "http://devnet:devnet@localhost:18443"
+
+[accounts.deployer]
+mnemonic = "royal inquiry sort lounge purse satisfy force pilot pretty once guitar call claim photo ginger way mammal guitar salad ancient rigid black bubble add"
+balance = 100000000000000
+address = "ST17NEAXJEETBX9G2J4W8S01CQ7K05HC9GEKR1FQZ"
+
+[accounts.wallet_1]
+mnemonic = "reveal december lens unhappy cost swallow horror december pony note figure fantasy"
+balance = 100000000000000
+
+[accounts.wallet_2]
+mnemonic = "conduct front sure circle gap gadget trouble juice chimney marriage episode tooth"
+balance = 100000000000000
+
+[accounts.wallet_3]
+mnemonic = "just rifle before page this palace clever vendor merge phone custom oxygen"
+balance = 100000000000000
+
+[accounts.wallet_4]
+mnemonic = "tumble marine umbrella broom garbage offer sauce fiction give flame wait invite"
+balance = 100000000000000
+
+[accounts.wallet_5]
+mnemonic = "cave best erosion mix primary debate nature tail task tree talk rate"
+balance = 100000000000000

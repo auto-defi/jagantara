@@ -1,0 +1,101 @@
+---
+id: 0
+name: "Jagantara Devnet Deployment"
+network: devnet
+genesis:
+  wallets:
+    - name: deployer
+      address: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+      balance: "100000000000000"
+    - name: wallet_1
+      address: ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5
+      balance: "100000000000000"
+    - name: wallet_2
+      address: ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG
+      balance: "100000000000000"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: jaga-token
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 10000
+            path: contracts/jaga-token.clar
+            anchor-block-only: true
+        - contract-publish:
+            contract-name: jaga-stake
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 15000
+            path: contracts/jaga-stake.clar
+            anchor-block-only: true
+        - contract-publish:
+            contract-name: insurance-manager
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 12000
+            path: contracts/insurance-manager.clar
+            anchor-block-only: true
+        - contract-publish:
+            contract-name: dao-governance
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 14000
+            path: contracts/dao-governance.clar
+            anchor-block-only: true
+        - contract-publish:
+            contract-name: claim-manager
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 10000
+            path: contracts/claim-manager.clar
+            anchor-block-only: true
+        - contract-publish:
+            contract-name: morpho-reinvest
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 8000
+            path: contracts/morpho-reinvest.clar
+            anchor-block-only: true
+      epoch: "3.0"
+    - id: 1
+      transactions:
+        - contract-call:
+            contract-name: jaga-token
+            method: set-minter
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 1000
+            args:
+              - principal: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.jaga-stake
+            anchor-block-only: true
+        - contract-call:
+            contract-name: jaga-stake
+            method: set-config
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 1000
+            args:
+              - principal: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.insurance-manager
+              - principal: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.claim-manager
+            anchor-block-only: true
+        - contract-call:
+            contract-name: insurance-manager
+            method: initialize-tiers
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 1000
+            anchor-block-only: true
+        - contract-call:
+            contract-name: dao-governance
+            method: set-config
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 1000
+            args:
+              - principal: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.jaga-token
+              - principal: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.insurance-manager
+            anchor-block-only: true
+        - contract-call:
+            contract-name: claim-manager
+            method: set-config
+            expected-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+            cost: 1000
+            args:
+              - principal: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.dao-governance
+              - principal: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.jaga-stake
+            anchor-block-only: true
+      epoch: "3.0"
+---

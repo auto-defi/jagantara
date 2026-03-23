@@ -1,0 +1,29 @@
+[network]
+name = "simnet"
+
+[network.simnet]
+name = "simnet"
+
+[accounts.deployer]
+mnemonic = "talk water garlic give screen truth angle ramp replace alarm wave giraffe"
+balance = 100000000000000
+
+[accounts.wallet_1]
+mnemonic = "reveal december lens unhappy cost swallow horror december pony note figure fantasy"
+balance = 100000000000000
+
+[accounts.wallet_2]
+mnemonic = "conduct front sure circle gap gadget trouble juice chimney marriage episode tooth"
+balance = 100000000000000
+
+[accounts.wallet_3]
+mnemonic = "just rifle before page this palace clever vendor merge phone custom oxygen"
+balance = 100000000000000
+
+[accounts.wallet_4]
+mnemonic = "tumble marine umbrella broom garbage offer sauce fiction give flame wait invite"
+balance = 100000000000000
+
+[accounts.wallet_5]
+mnemonic = "cave best erosion mix primary debate nature tail task tree talk rate"
+balance = 100000000000000

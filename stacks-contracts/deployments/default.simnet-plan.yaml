@@ -1,0 +1,95 @@
+id: 0
+name: Simulated deployment, used as a default for `clarinet console`, `clarinet test` and `clarinet check`
+network: simnet
+genesis:
+  wallets:
+  - name: deployer
+    address: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  - name: wallet_1
+    address: ST2P9K9SQEP1R5CKF7VWR55WHM9QAJ7AP3EV769GV
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  - name: wallet_2
+    address: ST1FFBEZ4HPYC799ATDZ99KNAN8Q9KWRF7A3M69MX
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  - name: wallet_3
+    address: ST177EDGAX9WS09M5VCTWXV0VGTM3JX421AQS61XF
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  - name: wallet_4
+    address: ST3F0R1REP472QYMVF8FQBY0GB3K6W2GVPADQRRGS
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  - name: wallet_5
+    address: ST2DW35YK0FPF5CQYKV9J7JCNTC691QWHSF51TRR1
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  - name: wallet_6
+    address: ST3ADDHS1TB2G8RA6VM5JYVS02F2CMHFWBB7RWCMN
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  - name: wallet_7
+    address: STYJGW0VFQ8T06T787J33WBRS8N4MC032859P1AM
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  - name: wallet_8
+    address: ST3ESKXYFTXFPPKX9KZDW3NVAC9J2A936VV4N7WF7
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  - name: wallet_9
+    address: STGX49JBVR388JF3B8JGM5JAZK6CC6TG7RP2FCNV
+    balance: '100000000000000'
+    sbtc-balance: '1000000000'
+  contracts:
+  - genesis
+  - lockup
+  - bns
+  - cost-voting
+  - costs
+  - pox
+  - costs-2
+  - pox-2
+  - costs-3
+  - pox-3
+  - pox-4
+  - signers
+  - signers-voting
+  - costs-4
+plan:
+  batches:
+  - id: 0
+    transactions:
+    - transaction-type: emulated-contract-publish
+      contract-name: claim-manager
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/claim-manager.clar
+      clarity-version: 1
+    - transaction-type: emulated-contract-publish
+      contract-name: dao-governance
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/dao-governance.clar
+      clarity-version: 1
+    - transaction-type: emulated-contract-publish
+      contract-name: insurance-manager
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/insurance-manager.clar
+      clarity-version: 1
+    - transaction-type: emulated-contract-publish
+      contract-name: jaga-stake
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/jaga-stake.clar
+      clarity-version: 1
+    - transaction-type: emulated-contract-publish
+      contract-name: jaga-token
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/jaga-token.clar
+      clarity-version: 1
+    - transaction-type: emulated-contract-publish
+      contract-name: morpho-reinvest
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/morpho-reinvest.clar
+      clarity-version: 1
+    epoch: '2.05'
