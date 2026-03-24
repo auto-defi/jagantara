@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   icons: "./jagantara_icon.png",
 };
 
-export default function JagantaraCampaign() {
+export default function AIAgentPage() {
   return (
     <main className="w-full pt-2 " style={{ background: "var(--background)" }}>
       <section className="bg-[image:var(--gradient-secondary)] md:mx-10 p-4 md:p-8 rounded-3xl md:h-[80vh] overflow-y-auto hide-scrollbar py-8 ">
@@ -33,52 +33,71 @@ export default function JagantaraCampaign() {
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="rounded-2xl bg-white/5 p-5 border border-white/10">
-            <h2 className="text-lg md:text-xl font-semibold mb-3">AI Agent actions</h2>
+            <h2 className="text-lg md:text-xl font-semibold mb-3">
+              AI Agent actions
+            </h2>
             <div className="space-y-3 text-sm text-white/80">
               <p>
-                Jagantara exposes an MCP-compatible endpoint at <code className="text-white">/api/mcp</code>.
-                On Stacks <b>testnet</b>, the server enforces an <b>x402-style paywall</b> for
-                certain tools.
+                Jagantara exposes an MCP-compatible endpoint at{" "}
+                <code className="text-white">/api/mcp</code>. On Stacks{" "}
+                <b>testnet</b>, the server enforces an <b>x402-style paywall</b>
+                for certain tools.
               </p>
               <ul className="list-disc list-inside space-y-2">
                 <li>
-                  <code className="text-white">buy_insurance_onchain</code>: buys a policy (premium)
-                  by calling <code className="text-white">insurance-manager-v2.pay-premium</code>.
+                  <code className="text-white">buy_insurance_onchain</code>:
+                  buys a policy (premium) by calling{" "}
+                  <code className="text-white">
+                    insurance-manager-v2.pay-premium
+                  </code>
+                  .
                 </li>
                 <li>
-                  <code className="text-white">create_claim_onchain</code>: creates a claim record
-                  (server-side tool).
+                  <code className="text-white">create_claim_onchain</code>:
+                  creates a claim record (server-side tool).
                 </li>
               </ul>
               <p className="text-white/70">
                 Payment verification logic lives in
-                <code className="text-white"> jagantara/src/lib/x402/stacks-x402.ts</code>.
+                <code className="text-white">
+                  {" "}
+                  jagantara/src/lib/x402/stacks-x402.ts
+                </code>
+                .
               </p>
             </div>
           </div>
 
           <div className="rounded-2xl bg-white/5 p-5 border border-white/10">
-            <h2 className="text-lg md:text-xl font-semibold mb-3">How to pay (x402)</h2>
+            <h2 className="text-lg md:text-xl font-semibold mb-3">
+              How to pay (x402)
+            </h2>
             <div className="space-y-3 text-sm text-white/80">
               <ol className="list-decimal list-inside space-y-2">
                 <li>
-                  Call <code className="text-white">POST /api/mcp</code> with the tool name.
+                  Call <code className="text-white">POST /api/mcp</code> with
+                  the tool name.
                 </li>
                 <li>
-                  If payment is required, the response includes the x402 requirement (header name,
-                  merchant address, and USDCx token contract).
+                  If payment is required, the response includes the x402
+                  requirement (header name, merchant address, and USDCx token
+                  contract).
                 </li>
                 <li>
-                  Send a SIP-010 <code className="text-white">transfer</code> on the USDCx token to the merchant address.
+                  Send a SIP-010 <code className="text-white">transfer</code> on
+                  the USDCx token to the merchant address.
                 </li>
                 <li>
                   Retry the request including the transfer txid in the header
-                  <code className="text-white"> x-payment-txid</code> (or the configured header).
+                  <code className="text-white"> x-payment-txid</code> (or the
+                  configured header).
                 </li>
               </ol>
 
               <div className="mt-4 rounded-xl bg-black/30 border border-white/10 p-4">
-                <div className="text-xs font-semibold text-white/90 mb-2">Example (agent request)</div>
+                <div className="text-xs font-semibold text-white/90 mb-2">
+                  Example (agent request)
+                </div>
                 <pre className="text-xs overflow-x-auto text-white/80 whitespace-pre-wrap">
 {`curl -s -X POST http://localhost:3000/api/mcp \\
   -H 'content-type: application/json' \\
@@ -117,7 +136,9 @@ export default function JagantaraCampaign() {
         </div>
 
         <div className="mt-8 rounded-2xl bg-white/5 p-5 border border-white/10">
-          <h2 className="text-lg md:text-xl font-semibold mb-4">Recent AI Agent payments</h2>
+          <h2 className="text-lg md:text-xl font-semibold mb-4">
+            Recent AI Agent payments
+          </h2>
 
           <div className="space-y-3">
             {[
@@ -167,10 +188,12 @@ export default function JagantaraCampaign() {
           </div>
 
           <div className="mt-4 text-xs text-white/60">
-            Note: This is a UI example. The server keeps recent payment txids in-memory for a TTL window.
+            Note: This is a UI example. The server keeps recent payment txids
+            in-memory for a TTL window.
           </div>
         </div>
       </section>
     </main>
   );
 }
+

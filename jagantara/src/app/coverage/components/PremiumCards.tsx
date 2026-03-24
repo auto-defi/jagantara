@@ -101,7 +101,7 @@ export default function PremiumsPage() {
     : Number((monthlyRate * selectedDuration).toFixed(2));
 
   const handlePay = async () => {
-    if (isPaying || !coverAddress) return;
+    if (isPaying || !coverAddress || !assetValue) return;
 
     const tierMap: Record<string, number> = {
       lite: 1,
@@ -111,12 +111,9 @@ export default function PremiumsPage() {
 
     const tier = tierMap[selectedTier];
 
-    const success = await payPremium(
-      tier,
-      selectedDuration,
-      coverAddress,
-      String(totalPrice)
-    );
+    // Contract expects `amount-to-cover` (not the computed premium).
+    // Use the user-entered asset value, treated as USDCx.
+    const success = await payPremium(tier, selectedDuration, coverAddress, assetValue);
     if (success) {
       refetchIsActive();
       console.log("Premium payment successful!");
@@ -143,7 +140,7 @@ export default function PremiumsPage() {
           </GradientText>
           <p className=" max-w-2xl mx-auto md:text-md text-sm">
             Protect your Web3 assets with comprehensive insurance coverage. Pay
-            with USDC, activate instantly on-chain.
+            with USDCx, activate instantly on-chain.
           </p>
         </div>
 
@@ -244,7 +241,7 @@ export default function PremiumsPage() {
                     type="text"
                     value={coverAddress}
                     onChange={(e) => setCoverAddress(e.target.value)}
-                    placeholder="0x441a78s..."
+                    placeholder="ST3DB3G0GA39FA8NZ5GG4FQ89D5AN6EJRJJ20R0SY"
                     className="w-full px-3 py-2 text-sm rounded-md bg-[var(--secondary)] border border-[var(--text)]"
                   />
                 </div>
@@ -252,7 +249,7 @@ export default function PremiumsPage() {
                 {/* Value Cap Input */}
                 <div>
                   <Label className="text-sm font-medium mb-2">
-                    Asset Value Cap (USDC)
+                    Asset Value Cap (USDCx)
                   </Label>
                   <input
                     type="number"
@@ -305,7 +302,7 @@ export default function PremiumsPage() {
                     </div>
                     <div className="flex justify-between items-center text-md md:text-lg font-bold pt-2 border-t">
                       <span>Total Premium</span>
-                      <span>${totalPrice} USDC</span>
+                      <span>${totalPrice} USDCx</span>
                     </div>
                   </div>
                 )}

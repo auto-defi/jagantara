@@ -105,7 +105,7 @@ export default function Component() {
                       </h3>
                       {activeStep === 1 && (
                         <p className="leading-relaxed text-md">
-                          Earn yield by depositing <strong>$USDC</strong> into
+                          Earn yield by depositing <strong>$USDCx</strong> into
                           the Jagantara Vault. In return, you’ll receive{" "}
                           <strong>$JAGA</strong> tokens, which grant governance
                           rights within the JagaDAO. Stakers are entitled to 30%
@@ -172,7 +172,7 @@ export default function Component() {
                       {activeStep === 3 && (
                         <p className="leading-relaxed">
                           To obtain coverage, users are required to purchase a
-                          premium using <strong>$USDC</strong>. The collected
+                           premium using <strong>$USDCx</strong>. The collected
                           funds are managed by the Insurance Manager, a
                           dedicated smart contract. As the number of
                           policyholders increases, so does the potential yield
@@ -255,7 +255,7 @@ export default function Component() {
                     <p className="font-bold text-base sm:text-lg">
                       {Math.round(
                         Number(totalReinvested) / 1e6
-                      ).toLocaleString() + " USDC"}
+                      ).toLocaleString() + " USDCx"}
                     </p>
                   </div>
 
@@ -272,7 +272,7 @@ export default function Component() {
                         alt="usdc"
                         className="object-cover w-7 h-6"
                       />
-                      USDC
+                      USDCx
                     </p>
                   </div>
                 </div>
@@ -410,7 +410,7 @@ function Step1Canvas() {
           textAnchor="middle"
           className="fill-[var(--text)] text-xs font-bold"
         >
-          USDC
+          USDCx
         </text>
         <ellipse
           cx="230"
@@ -486,11 +486,11 @@ function Step1Canvas() {
               ease: "easeInOut",
             }}
           >
-            <img
+            <Image
               src="/jagantara_icon.png"
               alt="Jagantara Icon"
-              width="80"
-              height="80"
+              width={80}
+              height={80}
               style={{
                 pointerEvents: "none",
                 borderRadius: "50%",
@@ -579,11 +579,11 @@ function Step2Canvas() {
               ease: "easeInOut",
             }}
           >
-            <img
+            <Image
               src="/jagantara_icon.png"
               alt="Jagantara Icon"
-              width="70"
-              height="70"
+              width={70}
+              height={70}
               style={{
                 pointerEvents: "none",
                 borderRadius: "50%",
@@ -864,11 +864,11 @@ function Step2Canvas() {
               ease: "easeInOut",
             }}
           >
-            <img
+            <Image
               src="/jagantara_icon.png"
               alt="Jagantara Icon"
-              width="70"
-              height="70"
+              width={70}
+              height={70}
               style={{
                 pointerEvents: "none",
                 borderRadius: "50%",
@@ -1003,7 +1003,7 @@ function Step3Canvas() {
             textAnchor="middle"
             className="fill-[var(--text)]  text-xs font-bold"
           >
-            USDC
+            USDCx
           </text>
 
           <circle
@@ -1019,7 +1019,7 @@ function Step3Canvas() {
             textAnchor="middle"
             className="fill-[var(--text)]  text-xs font-bold"
           >
-            USDC
+            USDCx
           </text>
 
           <circle
@@ -1035,7 +1035,7 @@ function Step3Canvas() {
             textAnchor="middle"
             className="fill-[var(--text)]  text-xs font-bold"
           >
-            USDC
+            USDCx
           </text>
         </motion.g>
 
@@ -1115,11 +1115,11 @@ function Step3Canvas() {
               ease: "easeInOut",
             }}
           >
-            <img
+            <Image
               src="/jagantara_icon.png"
               alt="Jagantara Icon"
-              width="70"
-              height="70"
+              width={70}
+              height={70}
               style={{
                 pointerEvents: "none",
                 borderRadius: "50%",

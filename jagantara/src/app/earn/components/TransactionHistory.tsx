@@ -61,7 +61,7 @@ export default function TransactionHistory() {
   const combinedTransactions = useMemo(() => {
     const stakeTxs = (stakes || []).map((tx) => ({
       type: "Stake",
-      amount: `+${(BigInt(tx.amount) / BigInt(1e6)).toString()} USDC`,
+      amount: `+${(BigInt(tx.amount) / BigInt(1e6)).toString()} USDCx`,
       date: formatDateFromTimestamp(tx.timestamp),
       status: "completed",
       hash: tx.txId,
@@ -70,7 +70,7 @@ export default function TransactionHistory() {
 
     const unstakeTxs = (unstakes || []).map((tx) => ({
       type: "Unstake",
-      amount: `-${(BigInt(tx.amount) / BigInt(1e6)).toString()} USDC`,
+      amount: `-${(BigInt(tx.amount) / BigInt(1e6)).toString()} USDCx`,
       date: formatDateFromTimestamp(tx.timestamp),
       status: "completed",
       hash: tx.txId,
@@ -79,7 +79,7 @@ export default function TransactionHistory() {
 
     const rewardTxs = (rewards || []).map((tx) => ({
       type: "Reward",
-      amount: `+${(BigInt(tx.amount) / BigInt(1e6)).toString()} USDC`,
+      amount: `+${(BigInt(tx.amount) / BigInt(1e6)).toString()} USDCx`,
       date: formatDateFromTimestamp(tx.timestamp),
       status: "completed",
       hash: tx.txId,

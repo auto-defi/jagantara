@@ -12,20 +12,32 @@ import { Token } from "@/types/stake";
 import { ArrowDown, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { TokenSelect, type TokenKey } from "@/components/token-select";
 
 export default function DepositInterface() {
   const { stake, isStaking, timeLeft } = useStake();
   const [amountIn, setAmountIn] = useState<string>("");
-  const [tokenIn, setTokenIn] = useState<Token>(TOKENS.USDC);
+  const [tokenIn, setTokenIn] = useState<Token>(TOKENS.USDCX);
   const [tokenOut, setTokenOut] = useState<Token>(TOKENS.JAGA);
   const amountOut = amountIn || "0.0";
+
+  // Map current Token state to TOKENS keys.
+  // (We only allow a limited set for tokenIn for now.)
+  const tokenInKey = (tokenIn.symbol === "USDCx"
+    ? "USDCX"
+    : tokenIn.symbol === "sBTC"
+      ? "SBTC"
+      : tokenIn.symbol === "STX"
+        ? "STX"
+        : "USDCX") as TokenKey;
+
+  const tokenOutKey = (tokenOut.symbol === "JAGA"
+    ? "JAGA"
+    : "JAGA") as TokenKey;
   const tokenInBalance = useTokenBalance(tokenIn);
   const tokenOutBalance = useTokenBalance(tokenOut);
   const isInsufficientBalance = () => {
-    const formatted = formatTokenAmount(
-      tokenInBalance.balance,
-      tokenIn.symbol as keyof typeof TOKENS // ✅ use tokenIn here
-    );
+    const formatted = formatTokenAmount(tokenInBalance.balance, tokenInKey);
 
     const balance = parseFloat(formatted.replace(/,/g, "")); // ✅ strip commas just in case
     return parseFloat(amountIn || "0") > balance;
@@ -60,14 +72,13 @@ export default function DepositInterface() {
           <div className="relative">
             <div className="p-3 sm:p-4 rounded-xl border bg-[var(--secondary)] border-slate-400">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-xs sm:text-sm opacity-70">USDC</span>
+                <span className="text-xs sm:text-sm opacity-70">
+                  {TOKENS[tokenInKey].symbol}
+                </span>
                 <span className="text-xs sm:text-sm truncate ml-2 opacity-70">
                   Balance:{" "}
                   {(() => {
-                    const raw = formatTokenAmount(
-                      tokenInBalance.balance,
-                      tokenIn.symbol as keyof typeof TOKENS
-                    );
+                    const raw = formatTokenAmount(tokenInBalance.balance, tokenInKey);
 
                     // Remove commas and strip token symbol
                     const numericPart = raw.replace(/,/g, "").split(" ")[0];
@@ -100,15 +111,15 @@ export default function DepositInterface() {
                       borderColor: "rgba(131, 110, 249, 0.3)",
                     }}
                   >
-                    {/* <span className=" text-sm md:text-lg">💵</span> */}
-                    <Image
-                      src={"/usdc_logo.png"}
-                      width={50}
-                      height={50}
-                      alt="usdc"
-                      className="object-cover w-7 h-6"
+                    <TokenSelect
+                      value={tokenInKey}
+                      onValueChange={(k) =>
+                        setTokenIn(TOKENS[k] as unknown as Token)
+                      }
+                      options={["USDCX", "SBTC", "STX"] as const}
+                      placeholder="Token"
+                      className="w-[130px] bg-[var(--secondary)] border border-slate-400"
                     />
-                    <span className="font-normal text-sm ">USDC</span>
                   </div>
                 </div>
               </div>
@@ -145,15 +156,15 @@ export default function DepositInterface() {
               <div className="flex-1 text-md md:text-2xl font-bold min-w-0 truncate">
                 {amountOut || "0.0"}
               </div>
-              <div
-                className="flex items-center gap-1 p-2 rounded-xl border"
-                style={{
-                  backgroundColor: "rgba(131, 110, 249, 0.1)",
-                  borderColor: "rgba(131, 110, 249, 0.3)",
-                }}
-              >
-                <span className="text-md sm:text-lg w-7">🛡️</span>
-                <span className="font-normal text-sm ">JAGA</span>
+              <div className="flex items-center gap-1 p-2 rounded-xl border">
+                <TokenSelect
+                  value={tokenOutKey}
+                  onValueChange={(k) => setTokenOut(TOKENS[k] as unknown as Token)}
+                  options={["JAGA"] as const}
+                  disabled
+                  placeholder="Token"
+                  className="w-[130px] bg-[var(--secondary)] border border-slate-400 opacity-80"
+                />
               </div>
             </div>
           </div>

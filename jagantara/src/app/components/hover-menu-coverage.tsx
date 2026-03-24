@@ -71,43 +71,41 @@ export default function HoverMenuCoverage() {
       panel: (
         <div className="space-y-4">
           <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs md:text-sm overflow-x-auto">
-            <div className="space-y-1">
-              <div>
-                <span className="text-blue-400">claimant:</span> "0x4E3b...aF9C"
+              <div className="space-y-1">
+                <div>
+                  <span className="text-blue-400">claimant:</span> &quot;ST3DB3...R0SY&quot;
+                </div>
+                <div>
+                  <span className="text-blue-400">coveredAddress:</span>{" "}
+                  &quot;ST2J8...Y2D4&quot;
+                </div>
+                <div>
+                  <span className="text-blue-400">tier:</span> &quot;Jaga Pro&quot;
+                </div>
+                <div>
+                  <span className="text-blue-400">title:</span> &quot;Phishing Attack&quot;
+                </div>
+                <div>
+                  <span className="text-blue-400">reason:</span> &quot;Private keys exposed via malicious...&quot;
+                </div>
+                <div>
+                  <span className="text-blue-400">claimType:</span> &quot;Wallet Recovery&quot;
+                </div>
+                <div>
+                  <span className="text-blue-400">amount:</span> 125000000n
+                </div>
+                <div className="text-gray-500">
+                  {"// Other fields set by contract:"}
+                </div>
+                <div className="text-gray-500">{"// createdAt: block.timestamp"}</div>
+                <div className="text-gray-500">{"// yesVotes: 0"}</div>
+                <div className="text-gray-500">{"// noVotes: 0"}</div>
+                <div className="text-gray-500">
+                  {"// status: ClaimStatus.Pending"}
+                </div>
+                <div className="text-gray-500">{"// approvedAt: 0"}</div>
               </div>
-              <div>
-                <span className="text-blue-400">coveredAddress:</span>{" "}
-                "0xA1D9...7B2E"
-              </div>
-              <div>
-                <span className="text-blue-400">tier:</span> "Jaga Pro"
-              </div>
-              <div>
-                <span className="text-blue-400">title:</span> "Phishing Attack"
-              </div>
-              <div>
-                <span className="text-blue-400">reason:</span> "Private keys
-                exposed via malicious..."
-              </div>
-              <div>
-                <span className="text-blue-400">claimType:</span> "Wallet
-                Recovery"
-              </div>
-              <div>
-                <span className="text-blue-400">amount:</span> 125000000n
-              </div>
-              <div className="text-gray-500">
-                // Other fields set by contract:
-              </div>
-              <div className="text-gray-500">// createdAt: block.timestamp</div>
-              <div className="text-gray-500">// yesVotes: 0</div>
-              <div className="text-gray-500">// noVotes: 0</div>
-              <div className="text-gray-500">
-                // status: ClaimStatus.Pending
-              </div>
-              <div className="text-gray-500">// approvedAt: 0</div>
             </div>
-          </div>
 
           <Button className="w-full bg-gray-900  cursor-pointer text-white py-6 rounded-3xl text-xs md:text-sm">
             <>
@@ -183,93 +181,36 @@ export default function HoverMenuCoverage() {
     },
     {
       id: "campaign",
-      title: "Campaign",
-      description: "Trusted by the world’s top companies and institutions.",
+      title: "AI Agent",
+      description: "AI Agent x402 payment + on-chain actions.",
       icon: <Building2 className="w-5 h-5" />,
       panel: (
         <div className="space-y-4">
           <div className="bg-[#001e3c] text-white rounded-xl p-6 shadow-lg">
             {/* Header and Description */}
             <div className="text-center space-y-2">
-              <h2 className="text-xl md:text-3xl font-bold">Campaign</h2>
+              <h2 className="text-xl md:text-3xl font-bold">AI Agent</h2>
               <p className="text-xs md:text-sm text-white/70 max-w-xl mx-auto mb-5">
-                The world's most respected investors and institutions have
-                chosen Jagantara as their trusted insurance partner.
+                AI Agents can access Jagantara via MCP and (on testnet) must
+                provide x402 proof-of-payment for protected actions.
               </p>
             </div>
 
-            {/* Logo Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-3 gap-4 justify-items-center my-6">
-              {[
-                { name: "Binance", logo: "/campaign_logos/bnb_launchpad.png" },
-                {
-                  name: "Coinbase",
-                  logo: "/coinbase-logo.webp",
-                  hideOnMobile: true,
-                },
-                { name: "100+", isText: true },
-              ]
-                .filter(
-                  (company) =>
-                    !(
-                      company.hideOnMobile &&
-                      typeof window !== "undefined" &&
-                      window.innerWidth < 640
-                    )
-                )
-                .map((company) => (
-                  <div
-                    key={company.name}
-                    className="bg-white/5 p-4 rounded-xl flex flex-col items-center w-full h-24 justify-center hover:bg-white/10 transition"
-                  >
-                    {company.isText ? (
-                      <>
-                        <span className="text-xl md:text-2xl font-bold text-white text-center">
-                          100+
-                        </span>
-                        <span className="text-xs text-white/60 mt-2">More</span>
-                      </>
-                    ) : (
-                      <img
-                        src={company.logo}
-                        alt={company.name}
-                        className="w-full md:h-10 h-8 object-cover"
-                      />
-                    )}
-                    {!company.isText && (
-                      <span className="text-xs text-white/60 mt-1">
-                        {company.name}
-                      </span>
-                    )}
-                  </div>
-                ))}
+            <div className="mt-6 bg-white/5 p-4 rounded-lg">
+              <div className="text-white/90 font-medium mb-2">Protected tools (testnet)</div>
+              <ul className="list-disc list-inside text-white/60 text-xs md:text-sm space-y-1">
+                <li>
+                  <span className="text-white/80">buy_insurance_onchain</span> — requires x402 payment in USDCx
+                </li>
+                <li>
+                  <span className="text-white/80">create_claim_onchain</span> — requires x402 payment in USDCx
+                </li>
+              </ul>
             </div>
 
-            {/* Stat Cards */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <StatCard
-                  icon={<Users className="w-6 h-6 text-blue-400" />}
-                  label="Total Projects"
-                  value="970+"
-                  accent="blue"
-                />
-                <StatCard
-                  icon={<DollarSign className="w-6 h-6 text-green-400" />}
-                  label="Total Raised"
-                  value="$14.7B+"
-                  accent="green"
-                />
-              </div>
+            <div className="mt-4 text-xs text-white/60">
+              See full instructions on <span className="text-white/80">/campaign</span> (AI Agent page).
             </div>
-
-            {/* Call to Action Button */}
-            <button className="w-full bg-[var(--accent)] mt-6 py-4 rounded-xl font-bold text-sm md:text-lg transition-all duration-300 flex items-center justify-center gap-2 hover:opacity-90 cursor-pointer">
-              <>
-                <Building2 className="w-5 h-5" />
-                <span>Join Our Campaign</span>
-              </>
-            </button>
           </div>
         </div>
       ),

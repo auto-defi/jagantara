@@ -80,6 +80,14 @@ export default function DAOInterface() {
     getVotingPeriod,
   } = useDAOGovernance();
 
+  // Contract status enum mapping (based on the Stacks DAO governance contract implementation)
+  // 0 = Pending, 1 = Approved, 2 = Rejected
+  const CLAIM_STATUS = {
+    Pending: 0,
+    Approved: 1,
+    Rejected: 2,
+  } as const;
+
   useEffect(() => {
     const fetchProposals = async () => {
       setLoadingProposals(true);
@@ -90,8 +98,9 @@ export default function DAOInterface() {
 
         for (const id of claimIds) {
           try {
-            const claim = await getClaimData(id);
-            const statusEnum = await getClaimStatus(id);
+            const claimId = BigInt(id);
+            const claim = await getClaimData(claimId);
+            const statusEnum = await getClaimStatus(claimId);
             if (!claim || statusEnum === null) continue;
             const now = Date.now();
 
@@ -102,13 +111,15 @@ export default function DAOInterface() {
             const canExecute = now > proposalCreationTime + minVotingMs;
             const end =
               Number(claim.createdAt) * 1000 + 7 * 24 * 60 * 60 * 1000;
-            const timeLeft =
-              statusEnum === ClaimStatus.Approved ||
-              statusEnum === ClaimStatus.Rejected
-                ? "Ended"
-                : now > end
-                  ? "Ended"
-                  : `${Math.floor((end - now) / (1000 * 60 * 60 * 24))} days`;
+            const statusNumber = Number(statusEnum);
+            const isEnded =
+              statusNumber === CLAIM_STATUS.Approved ||
+              statusNumber === CLAIM_STATUS.Rejected ||
+              now > end;
+
+            const timeLeft = isEnded
+              ? "Ended"
+              : `${Math.floor((end - now) / (1000 * 60 * 60 * 24))} days`;
 
             result.push({
               id: id.toString(),
@@ -118,9 +129,9 @@ export default function DAOInterface() {
               coveredAddress: claim.coveredAddress,
               amount: BigInt(claim.amount),
               status:
-                statusEnum === ClaimStatus.Pending
+                statusNumber === CLAIM_STATUS.Pending
                   ? "active"
-                  : statusEnum === ClaimStatus.Approved
+                  : statusNumber === CLAIM_STATUS.Approved
                     ? "passed"
                     : "rejected",
               votesFor: Number(claim.yesVotes),
@@ -145,12 +156,12 @@ export default function DAOInterface() {
     };
 
     fetchProposals();
-  }, []);
+  }, [getClaimCounter, getClaimData, getClaimStatus, getVotingPeriod, CLAIM_STATUS.Approved, CLAIM_STATUS.Pending, CLAIM_STATUS.Rejected]);
 
   const handleVote = async (proposalId: string, vote: "for" | "against") => {
     const approve = vote === "for";
     try {
-      await voteOnClaim(Number(proposalId), approve);
+      await voteOnClaim(BigInt(proposalId), approve);
       toast.success(`Voted ${vote} on proposal ${proposalId}`);
     } catch (err) {
       toast.error("Vote failed");
@@ -344,9 +355,7 @@ export default function DAOInterface() {
                                       className="bg-[var(--third)] hover:bg-[var(--third)]/50 cursor-pointer"
                                       onClick={async () => {
                                         try {
-                                          await executeVote(
-                                            Number(proposal.id)
-                                          );
+                                          await executeVote(BigInt(proposal.id));
                                           toast.success(
                                             `Proposal ${proposal.id} executed`
                                           );
@@ -383,7 +392,7 @@ export default function DAOInterface() {
                                     BigInt(proposal.amount),
                                     6
                                   ).toString()}{" "}
-                                  USDC
+                                  USDCx
                                 </span>
                               </div>
                             </div>
@@ -670,7 +679,7 @@ export default function DAOInterface() {
                                   BigInt(proposal.amount),
                                   6
                                 ).toString()}{" "}
-                                USDC
+                                USDCx
                               </span>
                             </div>
                           </div>

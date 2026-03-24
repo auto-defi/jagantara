@@ -124,7 +124,7 @@ export default function InfiniteLogoLoop() {
             </GradientText>
 
             <p className="mt-6 text-md md:text-xl leading-8 text-muted-foreground max-w-3xl mx-auto">
-              Join the world's most innovative financial technology companies
+              Join the world&apos;s most innovative financial technology companies
               and institutions who trust our platform to power their
               next-generation solutions
             </p>

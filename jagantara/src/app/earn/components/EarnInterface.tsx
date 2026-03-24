@@ -109,11 +109,11 @@ export default function EarnInterface() {
             <div className="relative mt-5">
               <div className="p-3 sm:p-4 rounded-xl border border-slate-400 bg-[var(--secondary)]">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs sm:text-sm opacity-70">USDC</span>
+                  <span className="text-xs sm:text-sm opacity-70">USDCx</span>
                   <span className="text-xs sm:text-sm truncate ml-2 opacity-70">
                     Available:{" "}
                     {(() => {
-                      const raw = formatTokenAmount(pendingReward, "USDC");
+                      const raw = formatTokenAmount(pendingReward, "USDCX");
 
                       // Remove commas and strip token symbol
                       const numericPart = raw.replace(/,/g, "").split(" ")[0];
@@ -127,7 +127,7 @@ export default function EarnInterface() {
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="flex-1 text-lg sm:text-2xl font-bold min-w-0 truncate">
-                    {formatTokenAmount(pendingReward, "USDC")}
+                    {formatTokenAmount(pendingReward, "USDCX")}
                   </div>
                   <div
                     className="flex items-center gap-1 p-2 rounded-xl border"
@@ -140,10 +140,10 @@ export default function EarnInterface() {
                       src={"/usdc_logo.png"}
                       width={50}
                       height={50}
-                      alt="usdc"
+                      alt="usdcx"
                       className="object-cover w-7 h-6"
                     />
-                    <span className="font-normal text-sm ">USDC</span>
+                    <span className="font-normal text-sm ">USDCx</span>
                   </div>
                 </div>
               </div>
@@ -219,7 +219,7 @@ export default function EarnInterface() {
                 <div className="flex justify-between md:text-md text-sm">
                   <p className="opacity-70 font-light">💸 Total Deposit</p>
                   <p className="font-medium text-green-600">
-                    {formatTokenAmount(currentStake, "USDC")}
+                    {formatTokenAmount(currentStake, "USDCX")}
                   </p>
                 </div>
               </div>
@@ -229,11 +229,11 @@ export default function EarnInterface() {
               <div className="relative">
                 <div className="p-3 sm:p-4 rounded-xl border bg-[var(--secondary)] border-slate-400">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs sm:text-sm opacity-70">USDC</span>
+                    <span className="text-xs sm:text-sm opacity-70">USDCx</span>
                     <span className="text-xs sm:text-sm truncate ml-2 opacity-70">
                       Available:{" "}
                       {(() => {
-                        const raw = formatTokenAmount(currentStake, "USDC");
+                        const raw = formatTokenAmount(currentStake, "USDCX");
 
                         // Remove commas and strip token symbol
                         const numericPart = raw.replace(/,/g, "").split(" ")[0];
@@ -275,7 +275,7 @@ export default function EarnInterface() {
                           className="object-cover w-7 h-6"
                         />
                         <span className="font-normal text-xs md:text-sm ">
-                          USDC
+                          USDCx
                         </span>
                       </div>
                     </div>

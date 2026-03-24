@@ -63,7 +63,7 @@ export default function StakingDetail() {
               id="deposit"
               icon={<TrendingUp className="w-6 h-6" />}
               label="Deposit"
-              description="Deposit $USDC to Stake"
+              description="Deposit $USDCx to Stake"
             />
             <TabButton
               id="earn"

@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -76,19 +76,22 @@ export default function CoverageInterface() {
     tier: "",
     reason: "",
     amount: "",
-    currency: "USDC",
+    currency: "USDCx",
     claimType: "",
     title: "",
     supportingEvidence: "",
     acknowledgments: [false, false, false, false],
   });
 
-  const premiumTypes = [
-    { value: "Tier-1", label: "Jaga Lite" },
-    { value: "Tier-2", label: "Jaga Shield" },
-    { value: "Tier-3", label: "Jaga Max" },
-    { value: "Tier-4", label: "Jaga Enterprise" },
-  ];
+  const premiumTypes = useMemo(
+    () => [
+      { value: "Tier-1", label: "Jaga Lite" },
+      { value: "Tier-2", label: "Jaga Shield" },
+      { value: "Tier-3", label: "Jaga Max" },
+      { value: "Tier-4", label: "Jaga Enterprise" },
+    ],
+    []
+  );
   const iconMap: Record<string, React.ElementType> = {
     "Jaga Lite": Shield,
     "Jaga Shield": Star,
@@ -166,7 +169,7 @@ export default function CoverageInterface() {
       updateFormData("coveredAddress", policy[2]); // assuming policy[2] is the address
       updateFormData("tier", tier);
     }
-  }, [policy]);
+  }, [policy, premiumTypes]);
   if (isActiveLoading) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
@@ -325,7 +328,7 @@ export default function CoverageInterface() {
                                   alt="usdc"
                                   className="object-cover w-6 h-6"
                                 />
-                                USDC
+                                USDCx
                               </div>
                               <Input
                                 id="amount"
@@ -462,47 +465,42 @@ export default function CoverageInterface() {
                       <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs md:text-sm break-words md:overflow-x-auto">
                         <div className="space-y-1">
                           <div>
-                            <span className="text-blue-400">claimant:</span> "
-                            {address}"
+                            <span className="text-blue-400">claimant:</span> &quot;{address}&quot;
                           </div>
                           <div>
                             <span className="text-blue-400">
                               coveredAddress:
                             </span>{" "}
-                            "{formData.coveredAddress}"
+                            &quot;{formData.coveredAddress}&quot;
                           </div>
                           <div>
-                            <span className="text-blue-400">tier:</span> "
-                            {formData.tier}"
+                            <span className="text-blue-400">tier:</span> &quot;{formData.tier}&quot;
                           </div>
                           <div>
-                            <span className="text-blue-400">title:</span> "
-                            {formData.title}"
+                            <span className="text-blue-400">title:</span> &quot;{formData.title}&quot;
                           </div>
                           <div>
-                            <span className="text-blue-400">reason:</span> "
-                            {formData.reason}"
+                            <span className="text-blue-400">reason:</span> &quot;{formData.reason}&quot;
                           </div>
                           <div>
-                            <span className="text-blue-400">claimType:</span> "
-                            {formData.claimType}"
+                            <span className="text-blue-400">claimType:</span> &quot;{formData.claimType}&quot;
                           </div>
                           <div>
                             <span className="text-blue-400">amount:</span>{" "}
                             {formData.amount}000000n
                           </div>
                           <div className="text-gray-500">
-                            // Other fields set by contract:
+                            {"// Other fields set by contract:"}
                           </div>
                           <div className="text-gray-500">
-                            // createdAt: block.timestamp
+                            {"// createdAt: block.timestamp"}
                           </div>
-                          <div className="text-gray-500">// yesVotes: 0</div>
-                          <div className="text-gray-500">// noVotes: 0</div>
+                          <div className="text-gray-500">{"// yesVotes: 0"}</div>
+                          <div className="text-gray-500">{"// noVotes: 0"}</div>
                           <div className="text-gray-500">
-                            // status: ClaimStatus.Pending
+                            {"// status: ClaimStatus.Pending"}
                           </div>
-                          <div className="text-gray-500">// approvedAt: 0</div>
+                          <div className="text-gray-500">{"// approvedAt: 0"}</div>
                         </div>
                       </div>
                     </CardContent>

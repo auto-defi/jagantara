@@ -77,11 +77,11 @@ export default function VaultStats() {
             Vault Stats
           </GradientText>
           <p className="opacity-70 md:text-md text-sm">
-            Real-time metrics for USDC Jagantara Vault
+            Real-time metrics for USDCx Jagantara Vault
           </p>
 
           <div className="md:text-sm text-xs mt-2 opacity-70">
-            Current rate ratio: 1 JAGA = 1 USDC
+            Current rate ratio: 1 JAGA = 1 USDCx
           </div>
         </div>
 
@@ -96,7 +96,7 @@ export default function VaultStats() {
               title="Total Value Locked"
               value={
                 Math.round(Number(formattedVaultBalance)).toLocaleString() +
-                " USDC"
+                " USDCx"
               }
               subtitle="Real vault reserves"
               color="#0000FF"
@@ -123,7 +123,8 @@ export default function VaultStats() {
               }
               title="Total Staked"
               value={
-                Math.round(Number(totalSupply) / 1e6).toLocaleString() + " USDC"
+                Math.round(Number(totalSupply) / 1e6).toLocaleString() +
+                " USDCx"
               }
               subtitle="Total staked in Vault"
               color="#0000FF"
@@ -186,7 +187,7 @@ export default function VaultStats() {
             </p>
             <p className="font-bold text-base sm:text-lg">
               {Math.round(Number(totalReinvested) / 1e6).toLocaleString() +
-                " USDC"}
+                " USDCx"}
             </p>
           </div>
 
@@ -203,7 +204,7 @@ export default function VaultStats() {
                 alt="usdc"
                 className="object-cover w-7 h-6"
               />
-              USDC
+              USDCx
             </p>
           </div>
         </div>

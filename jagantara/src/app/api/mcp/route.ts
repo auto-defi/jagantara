@@ -1,6 +1,28 @@
 // src/app/api/mcp/route.ts - Fixed API Route
 import { NextRequest, NextResponse } from "next/server";
 import { JagantaraMCPClient } from "@/lib/mcp/mcp-client";
+import {
+  getX402Requirement,
+  verifyUsdcxTransferTxid,
+  type X402Action,
+} from "@/lib/x402/stacks-x402";
+
+const USED_PAYMENT_TXIDS = new Map<string, number>();
+const USED_TTL_MS = 1000 * 60 * 30; // 30 minutes
+
+function isTestnet(): boolean {
+  return (process.env.NEXT_PUBLIC_NETWORK || "testnet") === "testnet";
+}
+
+function requiresPayment(toolName: string): toolName is X402Action {
+  return toolName === "buy_insurance_onchain" || toolName === "create_claim_onchain";
+}
+
+function pruneUsedPayments(now: number) {
+  USED_PAYMENT_TXIDS.forEach((ts, txid) => {
+    if (now - ts > USED_TTL_MS) USED_PAYMENT_TXIDS.delete(txid);
+  });
+}
 
 // Utility to convert camelCase to snake_case
 function toSnakeCase(str: string) {
@@ -28,6 +50,8 @@ function validateArgs(toolName: string, args: Record<string, any>): string[] {
       "coverage_period",
     ],
     claim_processing: ["claim_type", "incident_details", "loss_amount"],
+    buy_insurance_onchain: ["tier", "duration", "covered_address", "amount_to_cover"],
+    create_claim_onchain: ["claimant", "amount"],
   };
 
   const expected = required[toolName] || [];
@@ -60,6 +84,71 @@ export async function POST(req: NextRequest) {
           },
           { status: 400 }
         );
+      }
+
+      // x402 paywall (Stacks testnet only)
+      if (isTestnet() && requiresPayment(body.name)) {
+        const requirement = getX402Requirement(body.name);
+        const headerTxid = req.headers.get(requirement.headerName);
+
+        if (!headerTxid) {
+          return NextResponse.json(
+            {
+              error: "Payment required",
+              x402: {
+                action: requirement.action,
+                header: requirement.headerName,
+                token_contract_id: requirement.tokenContractId,
+                merchant_address: requirement.merchantAddress,
+                amount: requirement.amount.toString(),
+                decimals: 6,
+                note:
+                  "Send a SIP-010 USDCx transfer() on Stacks testnet to the merchant address, then retry with the txid in the header.",
+              },
+            },
+            { status: 402 }
+          );
+        }
+
+        const now = Date.now();
+        pruneUsedPayments(now);
+        if (USED_PAYMENT_TXIDS.has(headerTxid)) {
+          return NextResponse.json(
+            {
+              error: "Payment txid already used",
+              x402: { txid: headerTxid },
+            },
+            { status: 402 }
+          );
+        }
+
+        // Optional: bind payment to a declared payer address, if provided.
+        const expectedSender =
+          typeof normalizedArgs.payer === "string" ? normalizedArgs.payer : undefined;
+
+        try {
+          await verifyUsdcxTransferTxid({
+            txid: headerTxid,
+            expected: requirement,
+            expectedSender,
+          });
+          USED_PAYMENT_TXIDS.set(headerTxid, now);
+        } catch (e) {
+          return NextResponse.json(
+            {
+              error: "Invalid payment proof",
+              details: e instanceof Error ? e.message : String(e),
+              x402: {
+                action: requirement.action,
+                header: requirement.headerName,
+                token_contract_id: requirement.tokenContractId,
+                merchant_address: requirement.merchantAddress,
+                amount: requirement.amount.toString(),
+              },
+            },
+            { status: 402 }
+          );
+        }
       }
 
       const toolResult = await mcp.callTool(body.name, normalizedArgs);

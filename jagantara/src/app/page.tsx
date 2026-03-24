@@ -273,7 +273,7 @@ function App() {
             </h2>
             <p className="text-[var(--text)]/70 text-md md:text-lg max-w-3xl mx-auto">
               Choose the right coverage for your digital assets with our
-              flexible premium plans. Whether you're an individual or a
+              flexible premium plans. Whether you&apos;re an individual or a
               business, we have a plan that fits your needs.
             </p>
           </div>

@@ -106,16 +106,6 @@ export default function AnalyticInterface() {
     1000
   );
 
-  const daySortOrder = {
-    Mon: 0,
-    Tue: 1,
-    Wed: 2,
-    Thu: 3,
-    Fri: 4,
-    Sat: 5,
-    Sun: 6,
-  };
-
   const groupedDeposits = useMemo(() => {
     if (!stakes) return [];
 
@@ -171,6 +161,16 @@ export default function AnalyticInterface() {
   }, [stakes, timeFilter]);
 
   const combinedChartData = useMemo(() => {
+    const daySortOrder = {
+      Mon: 0,
+      Tue: 1,
+      Wed: 2,
+      Thu: 3,
+      Fri: 4,
+      Sat: 5,
+      Sun: 6,
+    } as const;
+
     const merged = groupedRewards.map((r) => {
       const match = groupedDeposits.find((d) => d.date === r.date);
       return {
@@ -247,7 +247,7 @@ export default function AnalyticInterface() {
               <Wallet className="h-5 w-5 opacity-80" />
               <span className="text-2xl font-bold">
                 {Math.round(Number(currentStake) / 1e6).toLocaleString() +
-                  " USDC"}
+                  " USDCx"}
               </span>
             </div>
           </CardHeader>

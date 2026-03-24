@@ -37,7 +37,7 @@ export default function PromotionalCards() {
               </h3>
               <p className="text-[var(--text)]/80 text-sm leading-relaxed">
                 Built on the scalable and secure Stacks blockchain. Leverage fast
-                finality, low fees, and Stacks's developer-friendly tools to build
+                finality, low fees, and Stacks&apos;s developer-friendly tools to build
                 seamless DeFi experiences.
               </p>
             </div>
@@ -135,7 +135,7 @@ export default function PromotionalCards() {
                 Hedge Inflation
               </h3>
               <p className="text-[var(--text)]/80 text-sm leading-relaxed">
-                Protect your wealth with Morpho's high-yield vaults. Earn
+                Protect your wealth with Morpho&apos;s high-yield vaults. Earn
                 sustainable returns that outpace inflation and preserve your
                 purchasing power.
               </p>

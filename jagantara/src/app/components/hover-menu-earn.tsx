@@ -65,14 +65,14 @@ export default function HoverMenuEarn() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <span className="text-sm text-[var(--text)]/70">
-                My Position (USDC)
+                My Position (USDCx)
               </span>
               <Shield className="w-5 h-5 text-blue-400" />
             </div>
 
             {/* Position Amount */}
             <div className="text-xl md:text-4xl font-semibold mb-4">
-              5,000,000 USDC
+              5,000,000 USDCx
             </div>
 
             {/* Stats */}
@@ -346,15 +346,15 @@ export default function HoverMenuEarn() {
               <div className="space-y-2">
                 <div className="flex justify-between md:text-lg text-sm">
                   <span className="">Available Balance</span>
-                  <span className="">2,500,000 USDC</span>
+                  <span className="">2,500,000 USDCx</span>
                 </div>
                 <div className="flex justify-between md:text-lg text-sm">
                   <span className="">Staked Amount</span>
-                  <span className="">1,000,000 USDC</span>
+                  <span className="">1,000,000 USDCx</span>
                 </div>
                 <div className="flex justify-between md:text-lg text-sm">
                   <span className="">Rewards Earned</span>
-                  <span className="text-green-600">+45,230 USDC</span>
+                  <span className="text-green-600">+45,230 USDCx</span>
                 </div>
               </div>
             </div>
@@ -402,7 +402,7 @@ export default function HoverMenuEarn() {
                   Earn
                 </GradientText>
                 <p className="text-[var(--text)]/70 text-xs md:text-lg">
-                  Make your USDC work for you
+                  Make your USDCx work for you
                 </p>
               </div>
               <Button
