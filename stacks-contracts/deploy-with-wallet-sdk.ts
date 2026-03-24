@@ -19,20 +19,39 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // Configuration
-const DEPLOYER_ADDRESS = 'ST17NEAXJEETBX9G2J4W8S01CQ7K05HC9GEKR1FQZ';
+// Expected deployer address is informational only; the script derives the real address
+// from DEPLOYER_MNEMONIC and deploys using that.
+const DEPLOYER_ADDRESS = 'ST3DB3G0GA39FA8NZ5GG4FQ89D5AN6EJRJJ20R0SY';
 // SECURITY: provide mnemonic at runtime via environment variable, do NOT hardcode.
 // Example:
 //   DEPLOYER_MNEMONIC='word1 word2 ...' npx tsx deploy-with-wallet-sdk.ts
 const MNEMONIC = process.env.DEPLOYER_MNEMONIC;
 
 // Contract deployment order
+//
+// IMPORTANT:
+// - The original contracts (jaga-token, jaga-stake, insurance-manager, dao-governance,
+//   claim-manager, morpho-reinvest) may already exist under the deployer address.
+// - For USDCx/sBTC/STX on-chain settlement we deploy companion "-v2" contracts that
+//   can coexist and be wired from the frontend.
+// - Deploy tokens first.
 const CONTRACTS = [
+  'usdcx-token',
+  'sbtc-token',
+  'vault',
+  'insurance-manager-v2',
+  'claim-manager-v2',
+  'dao-governance-v2',
+];
+
+// Optional legacy deployment (will likely fail with ContractAlreadyExists if already deployed)
+const LEGACY_CONTRACTS = [
   'jaga-token',
   'jaga-stake',
   'insurance-manager',
   'dao-governance',
   'claim-manager',
-  'morpho-reinvest'
+  'morpho-reinvest',
 ];
 
 /**
@@ -185,8 +204,11 @@ async function main() {
     return;
   }
   
+  const deployLegacy = (process.env.DEPLOY_LEGACY || '').toLowerCase() === 'true';
+  const allContracts = deployLegacy ? [...CONTRACTS, ...LEGACY_CONTRACTS] : CONTRACTS;
+
   console.log('\n📁 Contracts to deploy:');
-  CONTRACTS.forEach((contract, index) => {
+  allContracts.forEach((contract, index) => {
     console.log(`   ${index + 1}. ${contract}`);
   });
   
@@ -198,7 +220,7 @@ async function main() {
   
   const deployedContracts: { name: string; txId: string }[] = [];
   
-  for (const contractName of CONTRACTS) {
+  for (const contractName of allContracts) {
     const source = readContractSource(contractName);
     const txId = await deployContract(contractName, source, privateKey, derivedAddress);
     

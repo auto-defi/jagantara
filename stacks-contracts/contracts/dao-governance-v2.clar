@@ -1,19 +1,13 @@
-;; dao-governance.clar
-;; Jagantara DAO Governance (Claims) Contract for Stacks
+;; dao-governance-v2.clar
+;; Jagantara DAO Governance (Claims) Contract for Stacks (Multi-asset Settlement)
 ;;
-;; Simplified claim lifecycle:
-;; - Users submit claims
-;; - DAO votes
-;; - After voting period, anyone can execute and (if approved) it forwards to claim-manager
+;; This version stores `asset` per claim and integrates with:
+;; - insurance-manager-v2
+;; - claim-manager-v2
 
-;; Compatibility stubs (older tests expect "propose" / "execute-proposal")
-;; These are not used by the claims flow.
+(define-constant VOTING-PERIOD u1008)
+(define-constant MIN-VOTING u720)
 
-;; Voting config
-(define-constant VOTING-PERIOD u1008) ;; ~7 days
-(define-constant MIN-VOTING u720)     ;; ~5 days
-
-;; Approval threshold (2/3)
 (define-constant THRESH-NUM u2)
 (define-constant THRESH-DEN u3)
 
@@ -38,9 +32,6 @@
       (is-eq asset ASSET-STX))
 )
 
-;; NOTE: Use literal contract principals in `contract-call?` for maximum tooling compatibility.
-
-;; Claim storage
 (define-map claims
   { id: uint }
   {
@@ -60,24 +51,15 @@
 )
 
 (define-map claim-votes { claim-id: uint, voter: principal } bool)
-
 (define-data-var claim-counter uint u0)
 
 ;; ----------------------------
 ;; Read-only
 ;; ----------------------------
 
-(define-read-only (get-claim-counter)
-  (var-get claim-counter)
-)
-
-(define-read-only (get-claim (claim-id uint))
-  (map-get? claims { id: claim-id })
-)
-
-(define-read-only (get-claim-data (claim-id uint))
-  (map-get? claims { id: claim-id })
-)
+(define-read-only (get-claim-counter) (var-get claim-counter))
+(define-read-only (get-claim (claim-id uint)) (map-get? claims { id: claim-id }))
+(define-read-only (get-claim-data (claim-id uint)) (map-get? claims { id: claim-id }))
 
 (define-read-only (get-claim-status (claim-id uint))
   (match (map-get? claims { id: claim-id })
@@ -96,22 +78,15 @@
   )
 )
 
-(define-read-only (get-voting-duration)
-  VOTING-PERIOD
-)
+(define-read-only (get-voting-duration) VOTING-PERIOD)
 
+;; Compatibility stubs
 (define-public (propose (description (string-ascii 500)))
-  (begin
-    (print { event: "proposal-stub", description: description })
-    (ok u0)
-  )
+  (begin (print { event: "proposal-stub", description: description }) (ok u0))
 )
 
 (define-public (execute-proposal (proposal-id uint))
-  (begin
-    (print { event: "execute-proposal-stub", proposal-id: proposal-id })
-    (ok true)
-  )
+  (begin (print { event: "execute-proposal-stub", proposal-id: proposal-id }) (ok true))
 )
 
 ;; ----------------------------
@@ -126,11 +101,11 @@
 )
   (begin
     (asserts! (> amount u0) ERR-ZERO-AMOUNT)
-    ;; Require active insurance
-    (asserts! (contract-call? .insurance-manager is-active tx-sender) ERR-NOT-INSURED)
+    (asserts! (contract-call? .insurance-manager-v2 is-active tx-sender) ERR-NOT-INSURED)
+
     (let (
       (id (var-get claim-counter))
-      (asset (match (contract-call? .insurance-manager get-policy tx-sender)
+      (asset (match (contract-call? .insurance-manager-v2 get-policy tx-sender)
               p (get asset p)
               ASSET-USDCX))
       (start block-height)
@@ -158,7 +133,6 @@
   )
 )
 
-;; New: submit claim with explicit asset (UI can call this directly)
 (define-public (submit-claim-asset
   (asset uint)
   (reason (string-ascii 500))
@@ -169,7 +143,8 @@
   (begin
     (asserts! (is-valid-asset asset) ERR-INVALID-ASSET)
     (asserts! (> amount u0) ERR-ZERO-AMOUNT)
-    (asserts! (contract-call? .insurance-manager is-active tx-sender) ERR-NOT-INSURED)
+    (asserts! (contract-call? .insurance-manager-v2 is-active tx-sender) ERR-NOT-INSURED)
+
     (let (
       (id (var-get claim-counter))
       (start block-height)
@@ -232,7 +207,7 @@
 
         (if approved
           (begin
-            (try! (contract-call? .claim-manager submit-claim (get claimant c) (get asset c) (get amount c)))
+            (try! (contract-call? .claim-manager-v2 submit-claim (get claimant c) (get asset c) (get amount c)))
             (print { event: "claim-approved", claim-id: claim-id })
             (ok true)
           )
@@ -245,3 +220,4 @@
     )
   )
 )
+

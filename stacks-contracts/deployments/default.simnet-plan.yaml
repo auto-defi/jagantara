@@ -63,19 +63,29 @@ plan:
   - id: 0
     transactions:
     - transaction-type: emulated-contract-publish
+      contract-name: sbtc-token
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/sbtc-token.clar
+      clarity-version: 1
+    - transaction-type: emulated-contract-publish
+      contract-name: usdcx-token
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/usdcx-token.clar
+      clarity-version: 1
+    - transaction-type: emulated-contract-publish
       contract-name: claim-manager
       emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
       path: contracts/claim-manager.clar
       clarity-version: 1
     - transaction-type: emulated-contract-publish
-      contract-name: dao-governance
-      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
-      path: contracts/dao-governance.clar
-      clarity-version: 1
-    - transaction-type: emulated-contract-publish
       contract-name: insurance-manager
       emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
       path: contracts/insurance-manager.clar
+      clarity-version: 1
+    - transaction-type: emulated-contract-publish
+      contract-name: dao-governance
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/dao-governance.clar
       clarity-version: 1
     - transaction-type: emulated-contract-publish
       contract-name: jaga-stake
@@ -91,5 +101,10 @@ plan:
       contract-name: morpho-reinvest
       emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
       path: contracts/morpho-reinvest.clar
+      clarity-version: 1
+    - transaction-type: emulated-contract-publish
+      contract-name: vault
+      emulated-sender: ST1T0D3Y8836D2S8R7BK0YBMZ6RRJ3F7TYC07ACCT
+      path: contracts/vault.clar
       clarity-version: 1
     epoch: '2.05'

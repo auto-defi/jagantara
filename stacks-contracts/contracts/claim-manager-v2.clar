@@ -1,12 +1,8 @@
-;; claim-manager.clar
-;; Jagantara - Claim Payout Management Contract
+;; claim-manager-v2.clar
+;; Jagantara - Claim Payout Management Contract (Multi-asset Settlement)
 ;;
-;; Manages claim payouts to users once they are approved by DAO governance.
-;; Claims must be approved by DAO and can only be withdrawn within 7 days of approval.
-
-;; ============================================================================
-;; Constants
-;; ============================================================================
+;; Claim approvals originate from dao-governance-v2 and payouts are made in the
+;; recorded claim asset (USDCx, sBTC, or STX).
 
 ;; Claim expiry: 7 days = 1008 blocks
 (define-constant CLAIM-EXPIRY u1008)
@@ -19,23 +15,22 @@
 (define-constant ERR-NOT-AUTHORIZED (err u109))
 (define-constant ERR-INVALID-ASSET (err u110))
 
-;; ============================================================================
-;; Data Variables
-;; ============================================================================
+;; Asset identifiers
+(define-constant ASSET-USDCX u1)
+(define-constant ASSET-SBTC u2)
+(define-constant ASSET-STX u3)
+
+(define-private (is-valid-asset (asset uint))
+  (or (is-eq asset ASSET-USDCX)
+      (is-eq asset ASSET-SBTC)
+      (is-eq asset ASSET-STX))
+)
 
 (define-data-var owner principal tx-sender)
-
-;; Contract principals (same deployer)
-;; NOTE: Use literal contract principals in `contract-call?` for maximum tooling compatibility.
-
-;; ============================================================================
-;; Maps
-;; ============================================================================
 
 ;; Track if a claim has been executed/paid
 (define-map claim-executed uint bool)
 
-;; Claim data stored locally
 (define-map claims
   { id: uint }
   {
@@ -47,44 +42,23 @@
   }
 )
 
-;; Claim counter
 (define-data-var claim-count uint u0)
 
-;; Internal accounting (kept in sync with USDCx transfers)
-;; We keep this to avoid calling other contracts from read-only functions in simnet.
+;; Backwards-compat accounting (USDCx)
 (define-data-var contract-balance uint u0)
 
 ;; Per-asset internal accounting
 (define-map contract-balance-by-asset uint uint)
 
-;; Asset identifiers (kept consistent with vault)
-(define-constant ASSET-USDCX u1)
-(define-constant ASSET-SBTC u2)
-(define-constant ASSET-STX u3)
-
-(define-private (is-valid-asset (asset uint))
-  (or (is-eq asset ASSET-USDCX)
-      (is-eq asset ASSET-SBTC)
-      (is-eq asset ASSET-STX))
-)
-
 (define-private (contract-self)
   (as-contract tx-sender)
 )
-
-;; ============================================================================
-;; Private Helpers
-;; ============================================================================
 
 (define-private (is-owner)
   (is-eq tx-sender (var-get owner))
 )
 
-;; ============================================================================
-;; Public Functions - Admin
-;; ============================================================================
-
-;; Fund the contract for payouts (USDCx only; backwards compat)
+;; Fund (USDCx only; backwards compat)
 (define-public (fund-contract (amount uint))
   (begin
     (asserts! (> amount u0) ERR-INSUFFICIENT-BALANCE)
@@ -97,7 +71,7 @@
   )
 )
 
-;; New: fund contract in a specific asset
+;; Fund in a specific asset
 (define-public (fund-contract-asset (asset uint) (amount uint))
   (begin
     (asserts! (is-valid-asset asset) ERR-INVALID-ASSET)
@@ -110,7 +84,6 @@
               (contract-call? .sbtc-token transfer amount tx-sender (contract-self) none)))
     )
 
-    ;; keep old var in sync for USDCx
     (if (is-eq asset ASSET-USDCX)
       (var-set contract-balance (+ (var-get contract-balance) amount))
       true)
@@ -123,16 +96,10 @@
   )
 )
 
-;; ============================================================================
-;; Public Functions - Claim Management
-;; ============================================================================
-
-;; Submit a claim (called by owner or authorized contract)
-;; New signature includes asset.
+;; Submit a claim (called by dao-governance-v2)
 (define-public (submit-claim (claimant principal) (asset uint) (amount uint))
   (begin
-    ;; Only DAO governance contract can create approved claims.
-    (asserts! (is-eq contract-caller .dao-governance) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq contract-caller .dao-governance-v2) ERR-NOT-AUTHORIZED)
     (asserts! (is-valid-asset asset) ERR-INVALID-ASSET)
     (let ((claim-id (var-get claim-count))
           (approved-block block-height))
@@ -147,18 +114,13 @@
         }
       )
       (var-set claim-count (+ claim-id u1))
-      (print {
-        event: "claim-submitted",
-        claim-id: claim-id,
-        claimant: claimant,
-        amount: amount
-      })
+      (print { event: "claim-submitted", claim-id: claim-id, claimant: claimant, asset: asset, amount: amount })
       (ok claim-id)
     )
   )
 )
 
-;; Claim payout - allows claimant to withdraw approved claim
+;; Claim payout
 (define-public (claim-payout (claim-id uint))
   (let ((claim (unwrap! (map-get? claims { id: claim-id }) ERR-CLAIM-NOT-FOUND)))
     (let (
@@ -169,27 +131,19 @@
       (current-block block-height)
     )
       (begin
-        ;; Check not already paid
         (asserts! (not (default-to false (map-get? claim-executed claim-id))) ERR-ALREADY-PAID)
-        
-        ;; Verify caller is claimant
         (asserts! (is-eq tx-sender claimant) ERR-NOT-CLAIMANT)
-        
-        ;; Verify claim hasn't expired
         (asserts! (<= current-block (+ approved-at CLAIM-EXPIRY)) ERR-CLAIM-EXPIRED)
 
-        ;; Check internal accounting balance per asset
         (let ((bal (default-to u0 (map-get? contract-balance-by-asset asset))))
           (asserts! (>= bal amount) ERR-INSUFFICIENT-BALANCE)
           (map-set contract-balance-by-asset asset (- bal amount))
         )
 
-        ;; keep old var in sync for USDCx
         (if (is-eq asset ASSET-USDCX)
           (var-set contract-balance (- (var-get contract-balance) amount))
           true)
 
-        ;; Pay out from this contract to claimant
         (as-contract
           (begin
             (if (is-eq asset ASSET-STX)
@@ -200,57 +154,28 @@
             )
           )
         )
-        
-        ;; Mark as executed
+
         (map-set claim-executed claim-id true)
         (map-set claims { id: claim-id } (merge claim { executed: true }))
-        
-        (print {
-          event: "claim-paid",
-          claim-id: claim-id,
-          claimant: claimant,
-          asset: asset,
-          amount: amount
-        })
+
+        (print { event: "claim-paid", claim-id: claim-id, claimant: claimant, asset: asset, amount: amount })
         (ok true)
       )
     )
   )
 )
 
-;; ============================================================================
-;; Read-Only Functions
-;; ============================================================================
-
-(define-read-only (get-owner)
-  (var-get owner)
-)
-
-(define-read-only (get-claim-executed (claim-id uint))
-  (default-to false (map-get? claim-executed claim-id))
-)
-
-(define-read-only (get-claim-data (claim-id uint))
-  (map-get? claims { id: claim-id })
-)
-
+;; Read-only
+(define-read-only (get-owner) (var-get owner))
+(define-read-only (get-claim-executed (claim-id uint)) (default-to false (map-get? claim-executed claim-id)))
+(define-read-only (get-claim-data (claim-id uint)) (map-get? claims { id: claim-id }))
 (define-read-only (is-claim-approved (claim-id uint))
   (let ((claim (map-get? claims { id: claim-id })))
-    (match claim
-      c (> (get approved-at c) u0)
-      false
-    )
+    (match claim c (> (get approved-at c) u0) false)
   )
 )
-
-(define-read-only (get-claim-count)
-  (var-get claim-count)
-)
-
-(define-read-only (get-contract-balance)
-  (ok (var-get contract-balance))
-)
-
+(define-read-only (get-claim-count) (var-get claim-count))
+(define-read-only (get-contract-balance) (ok (var-get contract-balance)))
 (define-read-only (get-contract-balance-by-asset (asset uint))
   (begin
     (asserts! (is-valid-asset asset) ERR-INVALID-ASSET)
@@ -259,20 +184,6 @@
 )
 
 ;; Backwards-compat alias expected by frontend service layer
-(define-read-only (vault-balance)
-  (ok (var-get contract-balance))
-)
+(define-read-only (vault-balance) (ok (var-get contract-balance)))
+(define-read-only (get-claim-expiry) CLAIM-EXPIRY)
 
-;; Backwards-compat: allow older dao-governance versions to call submit-claim without asset.
-;; Assumes USDCx.
-(define-public (submit-claim-usdcx (claimant principal) (amount uint))
-  (begin
-    ;; Only DAO governance contract can create approved claims.
-    (asserts! (is-eq contract-caller .dao-governance) ERR-NOT-AUTHORIZED)
-    (submit-claim claimant ASSET-USDCX amount)
-  )
-)
-
-(define-read-only (get-claim-expiry)
-  CLAIM-EXPIRY
-)

@@ -18,16 +18,40 @@ depends_on = []
 path = "contracts/insurance-manager.clar"
 depends_on = []
 
+[contracts.insurance-manager-v2]
+path = "contracts/insurance-manager-v2.clar"
+depends_on = []
+
 [contracts.dao-governance]
 path = "contracts/dao-governance.clar"
+depends_on = []
+
+[contracts.dao-governance-v2]
+path = "contracts/dao-governance-v2.clar"
 depends_on = []
 
 [contracts.claim-manager]
 path = "contracts/claim-manager.clar"
 depends_on = []
 
+[contracts.claim-manager-v2]
+path = "contracts/claim-manager-v2.clar"
+depends_on = []
+
 [contracts.morpho-reinvest]
 path = "contracts/morpho-reinvest.clar"
+depends_on = []
+
+[contracts.usdcx-token]
+path = "contracts/usdcx-token.clar"
+depends_on = []
+
+[contracts.sbtc-token]
+path = "contracts/sbtc-token.clar"
+depends_on = []
+
+[contracts.vault]
+path = "contracts/vault.clar"
 depends_on = []
 
 [repl]

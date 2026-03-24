@@ -2,7 +2,7 @@
 ;; Jagantara - Synthetix Style Staking Contract
 ;;
 ;; A staking contract using Synthetix-style continuous rewards distribution.
-;; Users stake USDC (SIP-010) and receive JagaToken for governance voting.
+;; Users stake USDCx (SIP-010) and receive JagaToken for governance voting.
 ;; Rewards are distributed continuously based on time-weighted stake participation.
 ;; Simplified version for testing - no cross-contract calls.
 

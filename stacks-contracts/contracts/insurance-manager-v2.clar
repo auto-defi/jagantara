@@ -1,9 +1,8 @@
-;; insurance-manager.clar
-;; Jagantara - Insurance Premium Management Contract
+;; insurance-manager-v2.clar
+;; Jagantara - Insurance Premium Management Contract (Multi-asset Settlement)
 ;;
-;; Manages user insurance subscriptions (policy premium payments) and
-;; distributes collected premiums to various modules (staking, claims, treasury).
-;; Users pay premiums in USDCx (SIP-010) and the contract distributes funds.
+;; Supports premiums in USDCx (SIP-010), sBTC (SIP-010), or STX (native).
+;; Records the asset per policy and exposes pay-premium-asset for explicit settlement.
 
 ;; ============================================================================
 ;; Constants
@@ -16,9 +15,6 @@
 (define-constant ERR-ZERO-AMOUNT (err u103))
 
 ;; Tier percentages in basis points (per 100,000)
-;; Tier 1: 0.1% = 10 per 100,000
-;; Tier 2: 0.3% = 30 per 100,000
-;; Tier 3: 0.5% = 50 per 100,000
 (define-constant BASIS-POINTS u100000)
 (define-constant TIER-1-PCT u10)
 (define-constant TIER-2-PCT u30)
@@ -31,8 +27,12 @@
 (define-constant TREASURY-SHARE u25000)
 
 (define-constant ERR-TOKEN-TRANSFER (err u111))
+(define-constant ERR-INVALID-ASSET (err u112))
 
-;; NOTE: Use literal contract principals in `contract-call?` for maximum tooling compatibility.
+;; Asset identifiers (kept consistent with vault)
+(define-constant ASSET-USDCX u1)
+(define-constant ASSET-SBTC u2)
+(define-constant ASSET-STX u3)
 
 ;; ============================================================================
 ;; Data Variables
@@ -42,17 +42,15 @@
 (define-data-var total-users uint u0)
 (define-data-var total-collected uint u0)
 
-;; Default settlement asset for new policies (u1=USDCx, u2=sBTC, u3=STX)
-(define-data-var default-asset uint u1)
+;; Default settlement asset for new policies
+(define-data-var default-asset uint ASSET-USDCX)
 
 ;; ============================================================================
 ;; Maps
 ;; ============================================================================
 
-;; Tier to percentage mapping
 (define-map tier-percentages uint uint)
 
-;; Policy data by user address
 (define-map policies principal {
   last-paid-at: uint,
   duration: uint,
@@ -66,12 +64,6 @@
 ;; Track total collected per asset
 (define-map collected-by-asset uint uint)
 
-;; Asset identifiers (kept consistent with vault)
-(define-constant ASSET-USDCX u1)
-(define-constant ASSET-SBTC u2)
-(define-constant ASSET-STX u3)
-(define-constant ERR-INVALID-ASSET (err u112))
-
 ;; ============================================================================
 ;; Private Helpers
 ;; ============================================================================
@@ -84,19 +76,20 @@
   (as-contract tx-sender)
 )
 
-;; no dynamic config: contract ids are stable within deployer namespace
+(define-private (is-valid-asset (asset uint))
+  (or (is-eq asset ASSET-USDCX)
+      (is-eq asset ASSET-SBTC)
+      (is-eq asset ASSET-STX))
+)
 
-;; Get tier percentage (returns 0 if invalid tier)
 (define-private (tier-percentage (tier uint))
   (default-to u0 (map-get? tier-percentages tier))
 )
 
-;; Calculate premium price: (amountToCover * tierPercentage) / 100000
 (define-private (calculate-premium (amount-to-cover uint) (tier uint))
   (/ (* amount-to-cover (tier-percentage tier)) BASIS-POINTS)
 )
 
-;; Check if a policy is currently active
 (define-private (is-policy-active (user principal))
   (match (map-get? policies user)
     policy
@@ -108,48 +101,6 @@
   )
 )
 
-(define-private (is-valid-asset (asset uint))
-  (or (is-eq asset ASSET-USDCX)
-      (is-eq asset ASSET-SBTC)
-      (is-eq asset ASSET-STX))
-)
-
-;; ============================================================================
-;; Public Functions - Admin
-;; ============================================================================
-
-;; Initialize tier percentages (called once after deployment)
-(define-public (initialize-tiers)
-  (begin
-    (asserts! (is-owner) ERR-NOT-OWNER)
-    (map-set tier-percentages u1 TIER-1-PCT)
-    (map-set tier-percentages u2 TIER-2-PCT)
-    (map-set tier-percentages u3 TIER-3-PCT)
-    (print {
-      event: "tiers-initialized",
-      tier-1: TIER-1-PCT,
-      tier-2: TIER-2-PCT,
-      tier-3: TIER-3-PCT
-    })
-    (ok true)
-  )
-)
-
-;; Owner can set the default settlement asset for new policies
-(define-public (set-default-asset (asset uint))
-  (begin
-    (asserts! (is-owner) ERR-NOT-OWNER)
-    (asserts! (is-valid-asset asset) ERR-INVALID-ASSET)
-    (var-set default-asset asset)
-    (print { event: "default-asset-set", asset: asset })
-    (ok true)
-  )
-)
-
-;; ============================================================================
-;; Public Functions - User
-;; ============================================================================
-
 ;; Internal implementation that supports per-policy asset selection.
 (define-private (pay-premium-internal
   (asset uint)
@@ -160,14 +111,12 @@
 )
   (begin
     (asserts! (is-valid-asset asset) ERR-INVALID-ASSET)
-    ;; Validate tier
     (asserts! (> (tier-percentage tier) u0) ERR-INVALID-TIER)
-    
+
     (let (
       (premium-price (calculate-premium amount-to-cover tier))
       (existing-policy (map-get? policies tx-sender))
     )
-      ;; Calculate total price: premiumPrice * duration
       (let ((total-price (* premium-price duration)))
         (asserts! (> total-price u0) ERR-ZERO-AMOUNT)
 
@@ -179,13 +128,11 @@
                   (contract-call? .sbtc-token transfer total-price tx-sender (contract-self) none)))
         )
 
-        ;; Check if this is a new user
         (if (is-none existing-policy)
           (var-set total-users (+ (var-get total-users) u1))
           true
         )
-        
-        ;; Update policy state
+
         (map-set policies tx-sender {
           last-paid-at: block-height,
           duration: duration,
@@ -195,12 +142,11 @@
           amount-to-cover: amount-to-cover,
           asset: asset
         })
-        
-        ;; Update total collected
+
         (var-set total-collected (+ (var-get total-collected) total-price))
         (map-set collected-by-asset asset
           (+ (default-to u0 (map-get? collected-by-asset asset)) total-price))
-        
+
         (print {
           event: "premium-paid",
           user: tx-sender,
@@ -218,9 +164,36 @@
   )
 )
 
-;; Pay insurance premium
-;; Users pay based on tier percentage and duration
-;; Simplified version - just tracks policy data
+;; ============================================================================
+;; Public Functions - Admin
+;; ============================================================================
+
+(define-public (initialize-tiers)
+  (begin
+    (asserts! (is-owner) ERR-NOT-OWNER)
+    (map-set tier-percentages u1 TIER-1-PCT)
+    (map-set tier-percentages u2 TIER-2-PCT)
+    (map-set tier-percentages u3 TIER-3-PCT)
+    (print { event: "tiers-initialized", tier-1: TIER-1-PCT, tier-2: TIER-2-PCT, tier-3: TIER-3-PCT })
+    (ok true)
+  )
+)
+
+(define-public (set-default-asset (asset uint))
+  (begin
+    (asserts! (is-owner) ERR-NOT-OWNER)
+    (asserts! (is-valid-asset asset) ERR-INVALID-ASSET)
+    (var-set default-asset asset)
+    (print { event: "default-asset-set", asset: asset })
+    (ok true)
+  )
+)
+
+;; ============================================================================
+;; Public Functions - User
+;; ============================================================================
+
+;; Backwards-compat entrypoint: uses default-asset
 (define-public (pay-premium
   (tier uint)
   (duration uint)
@@ -242,12 +215,10 @@
 )
 
 ;; Distribute accumulated USDCx held by this contract according to the revenue split.
+;; (kept USDCx-only for now; sends claim share to claim-manager-v2)
 (define-public (transfer-revenue)
   (begin
     (asserts! (is-owner) ERR-NOT-OWNER)
-    ;; For multi-asset settlement, revenue distribution is asset-specific.
-    ;; To keep this migration safe, transfer-revenue now operates only on USDCx
-    ;; (asset u1). Other assets can be handled by a future upgrade.
     (let (
       (bal (unwrap! (contract-call? .usdcx-token get-balance (contract-self)) ERR-TOKEN-TRANSFER))
       (stake-amt (/ (* bal STAKE-SHARE) BASIS-POINTS))
@@ -262,7 +233,7 @@
             true
           )
           (if (> claim-amt u0)
-            (try! (contract-call? .usdcx-token transfer claim-amt tx-sender .claim-manager none))
+            (try! (contract-call? .usdcx-token transfer claim-amt tx-sender .claim-manager-v2 none))
             true
           )
           (if (> owner-amt u0)
@@ -273,15 +244,7 @@
             (try! (contract-call? .usdcx-token transfer treasury-amt tx-sender .morpho-reinvest none))
             true
           )
-          (print {
-            event: "revenue-transferred",
-            asset: ASSET-USDCX,
-            balance: bal,
-            stake: stake-amt,
-            claims: claim-amt,
-            owner: owner-amt,
-            treasury: treasury-amt
-          })
+          (print { event: "revenue-transferred", asset: ASSET-USDCX, balance: bal, stake: stake-amt, claims: claim-amt, owner: owner-amt, treasury: treasury-amt })
           (ok true)
         )
       )
@@ -289,15 +252,10 @@
   )
 )
 
-;; Deactivate a policy
 (define-public (deactivate-policy)
   (let ((policy (map-get? policies tx-sender)))
     (match policy
-      p
-        (begin
-          (map-set policies tx-sender (merge p { active: false }))
-          (ok true)
-        )
+      p (begin (map-set policies tx-sender (merge p { active: false })) (ok true))
       (err ERR-NOT-OWNER)
     )
   )
@@ -307,45 +265,19 @@
 ;; Read-Only Functions
 ;; ============================================================================
 
-(define-read-only (get-owner)
-  (var-get owner)
-)
-
-(define-read-only (get-total-users)
-  (var-get total-users)
-)
-
-(define-read-only (get-total-collected)
-  (var-get total-collected)
-)
-
-(define-read-only (get-tier-percentage (tier uint))
-  (tier-percentage tier)
-)
-
-(define-read-only (get-policy (user principal))
-  (map-get? policies user)
-)
-
-(define-read-only (get-default-asset)
-  (var-get default-asset)
-)
-
+(define-read-only (get-owner) (var-get owner))
+(define-read-only (get-total-users) (var-get total-users))
+(define-read-only (get-total-collected) (var-get total-collected))
+(define-read-only (get-tier-percentage (tier uint)) (tier-percentage tier))
+(define-read-only (get-policy (user principal)) (map-get? policies user))
+(define-read-only (get-default-asset) (var-get default-asset))
 (define-read-only (get-total-collected-by-asset (asset uint))
   (begin
     (asserts! (is-valid-asset asset) ERR-INVALID-ASSET)
     (ok (default-to u0 (map-get? collected-by-asset asset)))
   )
 )
+(define-read-only (is-active (user principal)) (is-policy-active user))
+(define-read-only (get-premium-price (amount-to-cover uint) (tier uint)) (calculate-premium amount-to-cover tier))
+(define-read-only (get-premium-duration) PREMIUM-DURATION)
 
-(define-read-only (is-active (user principal))
-  (is-policy-active user)
-)
-
-(define-read-only (get-premium-price (amount-to-cover uint) (tier uint))
-  (calculate-premium amount-to-cover tier)
-)
-
-(define-read-only (get-premium-duration)
-  PREMIUM-DURATION
-)
