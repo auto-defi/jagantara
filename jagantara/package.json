@@ -57,20 +57,20 @@
     "wagmi": "^3.5.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.10",
-    "@types/node": "^20.12.10",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.0",
-    "@wagmi/cli": "latest",
-    "bufferutil": "^4.0.8",
-    "encoding": "^0.1.13",
-    "lokijs": "^1.5.12",
-    "pino-pretty": "^10.3.1",
-    "postcss": "^8.5.6",
-    "supports-color": "^9.4.0",
-    "tailwindcss": "^4.1.10",
-    "tw-animate-css": "^1.3.4",
-    "typescript": "^5.4.5",
-    "utf-8-validate": "^5.0.2"
-  }
+      "@tailwindcss/postcss": "^4.1.10",
+      "@types/node": "^20.12.10",
+      "@types/react": "^18.3.1",
+      "@types/react-dom": "^18.3.0",
+      "@wagmi/cli": "latest",
+      "eslint": "^8.57.0",
+      "eslint-config-next": "14.2.4",
+      "encoding": "^0.1.13",
+      "lokijs": "^1.5.12",
+      "pino-pretty": "^10.3.1",
+      "postcss": "^8.5.6",
+      "supports-color": "^9.4.0",
+      "tailwindcss": "^4.1.10",
+      "tw-animate-css": "^1.3.4",
+      "typescript": "^5.4.5"
+    }
 }
