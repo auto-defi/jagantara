@@ -60,8 +60,10 @@ export const apolloClient = new ApolloClient({
       fetchPolicy: "cache-first",
     },
   },
-  // Add connection retry logic
-  connectToDevTools: process.env.NODE_ENV === "development",
+  // Apollo v3.14+: use devtools.enabled instead of connectToDevTools.
+  devtools: {
+    enabled: process.env.NODE_ENV === "development",
+  },
 });
 
 // GraphQL queries for Stakes

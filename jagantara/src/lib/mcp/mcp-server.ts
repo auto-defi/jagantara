@@ -8,6 +8,32 @@ import {
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
 dotenv.config();
+
+import {
+  makeContractCall,
+  broadcastTransaction,
+  AnchorMode,
+  PostConditionMode,
+  uintCV,
+  principalCV,
+} from "@stacks/transactions";
+import { StacksTestnet } from "@stacks/network";
+
+function mustGetEnv(name: string): string {
+  const v = process.env[name];
+  if (!v) throw new Error(`Missing required env var: ${name}`);
+  return v;
+}
+
+function parseContractId(contractId: string): { address: string; name: string } {
+  const parts = contractId.split(".");
+  if (parts.length !== 2) throw new Error(`Invalid contract id: ${contractId}`);
+  return { address: parts[0], name: parts[1] };
+}
+
+function isTestnet(): boolean {
+  return (process.env.NEXT_PUBLIC_NETWORK || "testnet") === "testnet";
+}
 class JagantaraMCPServer {
   private server: Server;
   private genAI: GoogleGenerativeAI;
@@ -113,6 +139,58 @@ class JagantaraMCPServer {
             required: ["claim_type", "incident_details", "loss_amount"],
           },
         },
+
+        // On-chain tools (Stacks testnet)
+        {
+          name: "buy_insurance_onchain",
+          description:
+            "(Stacks testnet) Buy an insurance policy by calling insurance-manager.pay-premium. Requires x402 payment proof via API route.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              tier: { type: "number", description: "Tier (1-3)" },
+              duration: { type: "number", description: "Duration multiplier (e.g. 1 = 30 days)" },
+              covered_address: {
+                type: "string",
+                description: "Stacks principal being covered",
+              },
+              amount_to_cover: {
+                type: "string",
+                description: "Amount to cover as uint string (6 decimals if USD-like)",
+              },
+              payer: {
+                type: "string",
+                description:
+                  "Optional principal expected to have sent the x402 payment transfer. If provided, backend verifies payment sender.",
+              },
+            },
+            required: ["tier", "duration", "covered_address", "amount_to_cover"],
+          },
+        },
+        {
+          name: "create_claim_onchain",
+          description:
+            "(Stacks testnet) Create a claim record by calling claim-manager.submit-claim as contract owner. Requires x402 payment proof via API route.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              claimant: {
+                type: "string",
+                description: "Stacks principal of claimant",
+              },
+              amount: {
+                type: "string",
+                description: "Claim amount as uint string",
+              },
+              payer: {
+                type: "string",
+                description:
+                  "Optional principal expected to have sent the x402 payment transfer. If provided, backend verifies payment sender.",
+              },
+            },
+            required: ["claimant", "amount"],
+          },
+        },
       ],
     }));
 
@@ -128,6 +206,10 @@ class JagantaraMCPServer {
             return await this.analyzeSmartContract(args);
           case "claim_processing":
             return await this.processClaim(args);
+          case "buy_insurance_onchain":
+            return await this.buyInsuranceOnchain(args);
+          case "create_claim_onchain":
+            return await this.createClaimOnchain(args);
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -144,6 +226,123 @@ class JagantaraMCPServer {
         };
       }
     });
+  }
+
+  private async buyInsuranceOnchain(args: any) {
+    if (!isTestnet()) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: "buy_insurance_onchain is only enabled on testnet.",
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    const contractId = mustGetEnv("NEXT_PUBLIC_INSURANCE_MANAGER_CONTRACT_ID");
+    const senderKey = mustGetEnv("STACKS_TESTNET_AGENT_PRIVATE_KEY");
+    const { address: contractAddress, name: contractName } =
+      parseContractId(contractId);
+
+    const tier = BigInt(String(args.tier));
+    const duration = BigInt(String(args.duration));
+    const coveredAddress = String(args.covered_address);
+    const amountToCover = BigInt(String(args.amount_to_cover));
+
+    const tx = await makeContractCall({
+      contractAddress,
+      contractName,
+      functionName: "pay-premium",
+      functionArgs: [
+        uintCV(tier),
+        uintCV(duration),
+        principalCV(coveredAddress),
+        uintCV(amountToCover),
+      ],
+      senderKey,
+      network: new StacksTestnet(),
+      anchorMode: AnchorMode.Any,
+      postConditionMode: PostConditionMode.Allow,
+    });
+
+    const result = await broadcastTransaction(tx as any, new StacksTestnet());
+
+    const txid = (result as any)?.txid || (result as any)?.transactionId;
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            {
+              ok: true,
+              action: "buy_insurance_onchain",
+              contract: contractId,
+              txid,
+              broadcast: result,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  }
+
+  private async createClaimOnchain(args: any) {
+    if (!isTestnet()) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: "create_claim_onchain is only enabled on testnet.",
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    const contractId = mustGetEnv("NEXT_PUBLIC_CLAIM_MANAGER_CONTRACT_ID");
+    const senderKey = mustGetEnv("STACKS_TESTNET_AGENT_PRIVATE_KEY");
+    const { address: contractAddress, name: contractName } =
+      parseContractId(contractId);
+
+    const claimant = String(args.claimant);
+    const amount = BigInt(String(args.amount));
+
+    const tx = await makeContractCall({
+      contractAddress,
+      contractName,
+      functionName: "submit-claim",
+      functionArgs: [principalCV(claimant), uintCV(amount)],
+      senderKey,
+      network: new StacksTestnet(),
+      anchorMode: AnchorMode.Any,
+      postConditionMode: PostConditionMode.Allow,
+    });
+
+    const result = await broadcastTransaction(tx as any, new StacksTestnet());
+
+    const txid = (result as any)?.txid || (result as any)?.transactionId;
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            {
+              ok: true,
+              action: "create_claim_onchain",
+              contract: contractId,
+              txid,
+              broadcast: result,
+            },
+            null,
+            2
+          ),
+        },
+      ],
+    };
   }
 
   private async generateInsuranceQuote(args: any) {

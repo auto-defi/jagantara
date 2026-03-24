@@ -58,12 +58,20 @@ export const getDeployerAddress = (): string => {
 
 // Contract addresses (update after deployment)
 export const CONTRACT_ADDRESSES = {
-  jagaToken: `${getDeployerAddress()}.jaga-token`,
-  jagaStake: `${getDeployerAddress()}.jaga-stake`,
-  insuranceManager: `${getDeployerAddress()}.insurance-manager`,
-  daoGovernance: `${getDeployerAddress()}.dao-governance`,
-  claimManager: `${getDeployerAddress()}.claim-manager`,
-  morphoReinvest: `${getDeployerAddress()}.morpho-reinvest`,
+  // Prefer explicit env vars when present (works for both v1 + v2 contract names)
+  jagaToken:
+    process.env.NEXT_PUBLIC_JAGA_TOKEN || `${getDeployerAddress()}.jaga-token`,
+  jagaStake:
+    process.env.NEXT_PUBLIC_JAGA_STAKE || `${getDeployerAddress()}.jaga-stake`,
+  insuranceManager:
+    process.env.NEXT_PUBLIC_INSURANCE_MANAGER ||
+    `${getDeployerAddress()}.insurance-manager`,
+  daoGovernance:
+    process.env.NEXT_PUBLIC_DAO_GOVERNANCE || `${getDeployerAddress()}.dao-governance`,
+  claimManager:
+    process.env.NEXT_PUBLIC_CLAIM_MANAGER || `${getDeployerAddress()}.claim-manager`,
+  morphoReinvest:
+    process.env.NEXT_PUBLIC_MORPHO_REINVEST || `${getDeployerAddress()}.morpho-reinvest`,
 };
 
 // Stacks Connect configuration

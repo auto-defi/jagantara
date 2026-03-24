@@ -7,23 +7,44 @@
 
 // Stacks contract addresses (format: ADDRESS.CONTRACT_NAME)
 // The deployer address is set via environment variable
-const DEPLOYER = process.env.NEXT_PUBLIC_DEPLOYER_ADDRESS || 'ST1PQHQKV0RJX28FYV8Z7QW8PGVMKWCYVQN0V3RB5';
+const DEPLOYER =
+  process.env.NEXT_PUBLIC_DEPLOYER_ADDRESS ||
+  "ST1PQHQKV0RJX28FYV8Z7QW8PGVMKWCYVQN0V3RB5";
+
+// Token contract placeholders (update after deployment)
+const USDCX_CONTRACT = `${DEPLOYER}.usdcx-token`;
+const SBTC_CONTRACT = `${DEPLOYER}.sbtc-token`;
 
 export const CONTRACTS = {
   // Stacks Testnet contracts
   JAGA_TOKEN: `${DEPLOYER}.jaga-token`,
   JAGA_STAKE: `${DEPLOYER}.jaga-stake`,
-  INSURANCE_MANAGER: `${DEPLOYER}.insurance-manager`,
-  CLAIM_MANAGER: `${DEPLOYER}.claim-manager`,
-  DAO_GOVERNANCE: `${DEPLOYER}.dao-governance`,
+  // v2 companion contracts for real multi-asset settlement
+  INSURANCE_MANAGER: `${DEPLOYER}.insurance-manager-v2`,
+  CLAIM_MANAGER: `${DEPLOYER}.claim-manager-v2`,
+  DAO_GOVERNANCE: `${DEPLOYER}.dao-governance-v2`,
   MORPHO_REINVEST: `${DEPLOYER}.morpho-reinvest`,
   
-  // USDC on Stacks (wrapped USDC or stablecoin)
+  // Stablecoin on Stacks
   // Note: Stacks uses SIP-010 tokens, not ERC-20
-  USDC: `${DEPLOYER}.usdc-token`, // Placeholder - update with actual USDC contract
+  USDCX: USDCX_CONTRACT, // Placeholder - update with actual USDCx contract
+
+  // sBTC on Stacks (SIP-010)
+  SBTC: SBTC_CONTRACT, // Placeholder - update with actual sBTC contract
+
+  // Backwards-compat alias (legacy code paths)
+  USDC: USDCX_CONTRACT,
 } as const;
 
 // Token configurations for Stacks
+const USDCX_TOKEN = {
+  address: CONTRACTS.USDCX,
+  symbol: "USDCx",
+  name: "USD Coin (USDCx)",
+  decimals: 6,
+  logo: "💵",
+} as const;
+
 export const TOKENS = {
   JAGA: {
     address: CONTRACTS.JAGA_TOKEN,
@@ -32,19 +53,25 @@ export const TOKENS = {
     decimals: 6, // Stacks standard
     logo: "🛡️",
   },
-  USDC: {
-    address: CONTRACTS.USDC,
-    symbol: "USDC",
-    name: "USD Coin",
-    decimals: 6,
-    logo: "💵",
+  // Primary stablecoin used across the app
+  USDCX: USDCX_TOKEN,
+  // Backwards-compat alias (treat USDC as USDCx)
+  USDC: USDCX_TOKEN,
+
+  // Bitcoin-pegged token
+  SBTC: {
+    address: CONTRACTS.SBTC,
+    symbol: "sBTC",
+    name: "sBTC",
+    decimals: 8,
+    logo: "₿",
   },
   STX: {
     address: "STX", // Native token
     symbol: "STX",
     name: "Stacks",
     decimals: 6,
-    logo: "₿",
+    logo: "⛰️",
   },
 } as const;
 
@@ -74,7 +101,9 @@ export const CLARITY_FUNCTIONS = {
   INSURANCE_MANAGER: {
     INITIALIZE_TIERS: 'initialize-tiers',
     PAY_PREMIUM: 'pay-premium',
+    PAY_PREMIUM_ASSET: 'pay-premium-asset',
     TRANSFER_REVENUE: 'transfer-revenue',
+    GET_DEFAULT_ASSET: 'get-default-asset',
     IS_ACTIVE: 'is-active',
     GET_POLICY: 'get-policy',
     GET_PREMIUM_PRICE: 'get-premium-price',
@@ -83,6 +112,7 @@ export const CLARITY_FUNCTIONS = {
   },
   DAO_GOVERNANCE: {
     SUBMIT_CLAIM: 'submit-claim',
+    SUBMIT_CLAIM_ASSET: 'submit-claim-asset',
     VOTE: 'vote',
     EXECUTE_VOTE: 'execute-vote',
     IS_CLAIM_APPROVED: 'is-claim-approved',
@@ -95,6 +125,7 @@ export const CLARITY_FUNCTIONS = {
     CLAIM_PAYOUT: 'claim-payout',
     VAULT_BALANCE: 'vault-balance',
     GET_CLAIM_EXECUTED: 'get-claim-executed',
+    FUND_CONTRACT_ASSET: 'fund-contract-asset',
   },
   MORPHO_REINVEST: {
     DEPOSIT: 'deposit',
@@ -117,8 +148,10 @@ export const MORPHO_ABI = [];
 export const MORPHO_REINVEST_ABI = [];
 
 // Default export
-export default {
+const ABI_DEFAULT_EXPORT = {
   CONTRACTS,
   TOKENS,
   CLARITY_FUNCTIONS,
 };
+
+export default ABI_DEFAULT_EXPORT;

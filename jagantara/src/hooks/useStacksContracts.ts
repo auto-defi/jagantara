@@ -7,8 +7,6 @@
 import { useState, useCallback } from 'react';
 import {
   callReadOnlyFunction,
-  makeContractCall,
-  broadcastTransaction,
   AnchorMode,
   PostConditionMode,
   uintCV,
@@ -22,12 +20,40 @@ import {
   ClarityValue,
   cvToValue,
 } from '@stacks/transactions';
+import { openContractCall } from '@stacks/connect';
 import { useStacksWallet, getStacksNetwork } from './useStacksWallet';
 import { CONTRACT_ADDRESSES } from '@/lib/stacks/network';
 
 // Helper to convert Clarity value
 const parseCV = (cv: ClarityValue): any => {
   return cvToValue(cv, true);
+};
+
+const getAppDetails = () => ({
+  name: 'Jagantara',
+  icon: typeof window !== 'undefined' ? `${window.location.origin}/jagantara_icon.png` : '',
+});
+
+const openContractCallAsync = (options: Parameters<typeof openContractCall>[0]) => {
+  return new Promise<{ txId: string }>((resolve, reject) => {
+    openContractCall({
+      ...options,
+      onFinish: (data: any) => {
+        const txId = data?.txId;
+        if (txId) resolve({ txId });
+        else reject(new Error('No txId returned from wallet'));
+      },
+      onCancel: () => reject(new Error('User canceled contract call')),
+    });
+  });
+};
+
+const splitContractId = (contractId: string) => {
+  const [contractAddress, contractName] = String(contractId).split('.');
+  if (!contractAddress || !contractName) {
+    throw new Error(`Invalid contract id: ${contractId}`);
+  }
+  return { contractAddress, contractName };
 };
 
 // ============================================================
@@ -197,6 +223,23 @@ export const useJagaStake = () => {
     }
   }, [address]);
 
+  const getTimeLeft = useCallback(async () => {
+    try {
+      const result = await callReadOnlyFunction({
+        contractAddress: CONTRACT_ADDRESSES.jagaStake.split('.')[0],
+        contractName: 'jaga-stake',
+        functionName: 'get-time-left',
+        functionArgs: [],
+        senderAddress: address || '',
+        network: getStacksNetwork(),
+      });
+      return parseCV(result);
+    } catch (error) {
+      console.error('Error getting time left:', error);
+      return null;
+    }
+  }, [address]);
+
   const getStakerCount = useCallback(async () => {
     try {
       const result = await callReadOnlyFunction({
@@ -236,21 +279,72 @@ export const useJagaStake = () => {
 
   const stake = useCallback(async (amount: bigint) => {
     if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    // Placeholder for actual implementation
-    return { amount, address };
+    if (amount <= BigInt(0)) throw new Error('Invalid amount');
+
+    setIsStaking(true);
+    try {
+      const [contractAddress, contractName] = CONTRACT_ADDRESSES.jagaStake.split('.');
+      const result = await openContractCallAsync({
+        network: getStacksNetwork(),
+        appDetails: getAppDetails(),
+        userSession,
+        contractAddress,
+        contractName,
+        functionName: 'stake',
+        functionArgs: [uintCV(amount)],
+        anchorMode: AnchorMode.Any,
+        postConditionMode: PostConditionMode.Allow,
+      });
+      return result;
+    } finally {
+      setIsStaking(false);
+    }
   }, [address, userSession]);
 
   const unstake = useCallback(async (amount: bigint) => {
     if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    return { amount, address };
+    if (amount <= BigInt(0)) throw new Error('Invalid amount');
+
+    setIsUnstaking(true);
+    try {
+      const [contractAddress, contractName] = CONTRACT_ADDRESSES.jagaStake.split('.');
+      const result = await openContractCallAsync({
+        network: getStacksNetwork(),
+        appDetails: getAppDetails(),
+        userSession,
+        contractAddress,
+        contractName,
+        functionName: 'unstake',
+        functionArgs: [uintCV(amount)],
+        anchorMode: AnchorMode.Any,
+        postConditionMode: PostConditionMode.Allow,
+      });
+      return result;
+    } finally {
+      setIsUnstaking(false);
+    }
   }, [address, userSession]);
 
   const claimReward = useCallback(async () => {
     if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    return { address };
+    setIsLoading(true);
+    try {
+      const [contractAddress, contractName] = CONTRACT_ADDRESSES.jagaStake.split('.');
+      const result = await openContractCallAsync({
+        network: getStacksNetwork(),
+        appDetails: getAppDetails(),
+        userSession,
+        contractAddress,
+        contractName,
+        functionName: 'claim-reward',
+        functionArgs: [],
+        anchorMode: AnchorMode.Any,
+        postConditionMode: PostConditionMode.Allow,
+      });
+      return result;
+    } finally {
+      setIsLoading(false);
+    }
   }, [address, userSession]);
 
   return {
@@ -258,6 +352,7 @@ export const useJagaStake = () => {
     getRewards,
     getEarned,
     getTotalSupply,
+    getTimeLeft,
     getStakerCount,
     isStaker,
     stake,
@@ -284,7 +379,7 @@ export const useInsuranceManager = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.insuranceManager.split('.')[0],
-        contractName: 'insurance-manager',
+        contractName: CONTRACT_ADDRESSES.insuranceManager.split('.')[1],
         functionName: 'get-policy',
         functionArgs: [principalCV(targetAddress)],
         senderAddress: targetAddress,
@@ -305,7 +400,7 @@ export const useInsuranceManager = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.insuranceManager.split('.')[0],
-        contractName: 'insurance-manager',
+        contractName: CONTRACT_ADDRESSES.insuranceManager.split('.')[1],
         functionName: 'is-active',
         functionArgs: [principalCV(targetAddress)],
         senderAddress: targetAddress,
@@ -324,7 +419,7 @@ export const useInsuranceManager = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.insuranceManager.split('.')[0],
-        contractName: 'insurance-manager',
+        contractName: CONTRACT_ADDRESSES.insuranceManager.split('.')[1],
         functionName: 'get-premium-price',
         functionArgs: [uintCV(amountToCover), uintCV(tier)],
         senderAddress: address || '',
@@ -341,7 +436,7 @@ export const useInsuranceManager = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.insuranceManager.split('.')[0],
-        contractName: 'insurance-manager',
+        contractName: CONTRACT_ADDRESSES.insuranceManager.split('.')[1],
         functionName: 'get-total-users',
         functionArgs: [],
         senderAddress: address || '',
@@ -358,7 +453,7 @@ export const useInsuranceManager = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.insuranceManager.split('.')[0],
-        contractName: 'insurance-manager',
+        contractName: CONTRACT_ADDRESSES.insuranceManager.split('.')[1],
         functionName: 'get-total-collected',
         functionArgs: [],
         senderAddress: address || '',
@@ -373,8 +468,30 @@ export const useInsuranceManager = () => {
 
   const payPremium = useCallback(async (tier: number, duration: number, coveredAddress: string, amountToCover: bigint) => {
     if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    return { tier, duration, coveredAddress, amountToCover, address };
+
+    setIsLoading(true);
+    try {
+      const { contractAddress, contractName } = splitContractId(CONTRACT_ADDRESSES.insuranceManager);
+      const result = await openContractCallAsync({
+        network: getStacksNetwork(),
+        appDetails: getAppDetails(),
+        userSession,
+        contractAddress,
+        contractName,
+        functionName: 'pay-premium',
+        functionArgs: [
+          uintCV(BigInt(tier)),
+          uintCV(BigInt(duration)),
+          principalCV(coveredAddress),
+          uintCV(amountToCover),
+        ],
+        anchorMode: AnchorMode.Any,
+        postConditionMode: PostConditionMode.Allow,
+      });
+      return result;
+    } finally {
+      setIsLoading(false);
+    }
   }, [address, userSession]);
 
   return {
@@ -401,7 +518,7 @@ export const useDAOGovernance = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.daoGovernance.split('.')[0],
-        contractName: 'dao-governance',
+        contractName: CONTRACT_ADDRESSES.daoGovernance.split('.')[1],
         functionName: 'get-claim',
         functionArgs: [uintCV(claimId)],
         senderAddress: address || '',
@@ -418,7 +535,7 @@ export const useDAOGovernance = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.daoGovernance.split('.')[0],
-        contractName: 'dao-governance',
+        contractName: CONTRACT_ADDRESSES.daoGovernance.split('.')[1],
         functionName: 'get-claim-status',
         functionArgs: [uintCV(claimId)],
         senderAddress: address || '',
@@ -435,7 +552,7 @@ export const useDAOGovernance = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.daoGovernance.split('.')[0],
-        contractName: 'dao-governance',
+        contractName: CONTRACT_ADDRESSES.daoGovernance.split('.')[1],
         functionName: 'is-claim-approved',
         functionArgs: [uintCV(claimId)],
         senderAddress: address || '',
@@ -452,7 +569,7 @@ export const useDAOGovernance = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.daoGovernance.split('.')[0],
-        contractName: 'dao-governance',
+        contractName: CONTRACT_ADDRESSES.daoGovernance.split('.')[1],
         functionName: 'get-claim-data',
         functionArgs: [uintCV(claimId)],
         senderAddress: address || '',
@@ -469,7 +586,7 @@ export const useDAOGovernance = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.daoGovernance.split('.')[0],
-        contractName: 'dao-governance',
+        contractName: CONTRACT_ADDRESSES.daoGovernance.split('.')[1],
         functionName: 'get-claim-counter',
         functionArgs: [],
         senderAddress: address || '',
@@ -486,8 +603,24 @@ export const useDAOGovernance = () => {
     if (!address || !userSession) throw new Error('Wallet not connected');
     setIsSubmitting(true);
     try {
-      // This would use @stacks/connect to sign and broadcast
-      return { reason, title, claimType, amount, address };
+      const { contractAddress, contractName } = splitContractId(CONTRACT_ADDRESSES.daoGovernance);
+      const result = await openContractCallAsync({
+        network: getStacksNetwork(),
+        appDetails: getAppDetails(),
+        userSession,
+        contractAddress,
+        contractName,
+        functionName: 'submit-claim',
+        functionArgs: [
+          stringAsciiCV(reason),
+          stringAsciiCV(title),
+          uintCV(BigInt(claimType)),
+          uintCV(amount),
+        ],
+        anchorMode: AnchorMode.Any,
+        postConditionMode: PostConditionMode.Allow,
+      });
+      return result;
     } finally {
       setIsSubmitting(false);
     }
@@ -495,21 +628,43 @@ export const useDAOGovernance = () => {
 
   const vote = useCallback(async (claimId: bigint, approve: boolean) => {
     if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    return { claimId, approve, address };
+    const { contractAddress, contractName } = splitContractId(CONTRACT_ADDRESSES.daoGovernance);
+    const result = await openContractCallAsync({
+      network: getStacksNetwork(),
+      appDetails: getAppDetails(),
+      userSession,
+      contractAddress,
+      contractName,
+      functionName: 'vote',
+      functionArgs: [uintCV(claimId), boolCV(approve)],
+      anchorMode: AnchorMode.Any,
+      postConditionMode: PostConditionMode.Allow,
+    });
+    return result;
   }, [address, userSession]);
 
   const executeVote = useCallback(async (claimId: bigint) => {
     if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    return { claimId, address };
+    const { contractAddress, contractName } = splitContractId(CONTRACT_ADDRESSES.daoGovernance);
+    const result = await openContractCallAsync({
+      network: getStacksNetwork(),
+      appDetails: getAppDetails(),
+      userSession,
+      contractAddress,
+      contractName,
+      functionName: 'execute-vote',
+      functionArgs: [uintCV(claimId)],
+      anchorMode: AnchorMode.Any,
+      postConditionMode: PostConditionMode.Allow,
+    });
+    return result;
   }, [address, userSession]);
 
   const getVotingPeriod = useCallback(async () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.daoGovernance.split('.')[0],
-        contractName: 'dao-governance',
+        contractName: CONTRACT_ADDRESSES.daoGovernance.split('.')[1],
         functionName: 'get-voting-duration',
         functionArgs: [],
         senderAddress: address || '',
@@ -526,7 +681,7 @@ export const useDAOGovernance = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.daoGovernance.split('.')[0],
-        contractName: 'dao-governance',
+        contractName: CONTRACT_ADDRESSES.daoGovernance.split('.')[1],
         functionName: 'get-proposal-threshold',
         functionArgs: [],
         senderAddress: address || '',
@@ -543,7 +698,7 @@ export const useDAOGovernance = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.daoGovernance.split('.')[0],
-        contractName: 'dao-governance',
+        contractName: CONTRACT_ADDRESSES.daoGovernance.split('.')[1],
         functionName: 'get-proposal-count',
         functionArgs: [],
         senderAddress: address || '',
@@ -556,11 +711,14 @@ export const useDAOGovernance = () => {
     }
   }, [address]);
 
-  const voteOnClaim = useCallback(async (claimId: bigint, support: boolean) => {
-    if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    return { claimId, support, address };
-  }, [address, userSession]);
+  const voteOnClaim = useCallback(
+    async (claimId: bigint, support: boolean) => {
+      if (!address || !userSession) throw new Error('Wallet not connected');
+      // Alias to `vote` (some UI paths use voteOnClaim)
+      return vote(claimId, support);
+    },
+    [address, userSession, vote]
+  );
 
   return {
     getClaim,
@@ -591,7 +749,7 @@ export const useClaimManager = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.claimManager.split('.')[0],
-        contractName: 'claim-manager',
+        contractName: CONTRACT_ADDRESSES.claimManager.split('.')[1],
         functionName: 'get-claim-executed',
         functionArgs: [uintCV(claimId)],
         senderAddress: address || '',
@@ -608,7 +766,7 @@ export const useClaimManager = () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.claimManager.split('.')[0],
-        contractName: 'claim-manager',
+        contractName: CONTRACT_ADDRESSES.claimManager.split('.')[1],
         functionName: 'vault-balance',
         functionArgs: [],
         senderAddress: address || '',
@@ -623,8 +781,25 @@ export const useClaimManager = () => {
 
   const claimPayout = useCallback(async (claimId: bigint) => {
     if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    return { claimId, address };
+
+    setIsLoading(true);
+    try {
+      const { contractAddress, contractName } = splitContractId(CONTRACT_ADDRESSES.claimManager);
+      const result = await openContractCallAsync({
+        network: getStacksNetwork(),
+        appDetails: getAppDetails(),
+        userSession,
+        contractAddress,
+        contractName,
+        functionName: 'claim-payout',
+        functionArgs: [uintCV(claimId)],
+        anchorMode: AnchorMode.Any,
+        postConditionMode: PostConditionMode.Allow,
+      });
+      return result;
+    } finally {
+      setIsLoading(false);
+    }
   }, [address, userSession]);
 
   return {
@@ -642,37 +817,56 @@ export const useMorphoReinvest = () => {
   const { address, userSession } = useStacksWallet();
   const [isLoading, setIsLoading] = useState(false);
 
-  const getTreasuryBalance = useCallback(async () => {
+  // NOTE: contract exposes `get-total-reinvested`, not `treasury-balance`.
+  const getTotalReinvested = useCallback(async () => {
     try {
       const result = await callReadOnlyFunction({
         contractAddress: CONTRACT_ADDRESSES.morphoReinvest.split('.')[0],
         contractName: 'morpho-reinvest',
-        functionName: 'treasury-balance',
+        functionName: 'get-total-reinvested',
         functionArgs: [],
         senderAddress: address || '',
         network: getStacksNetwork(),
       });
       return parseCV(result);
     } catch (error) {
-      console.error('Error getting treasury balance:', error);
+      console.error('Error getting total reinvested:', error);
       return null;
     }
   }, [address]);
 
+  // Map older UI language of "deposit" to contract's `reinvest`.
   const deposit = useCallback(async (amount: bigint) => {
     if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    return { amount, address };
+    if (amount <= BigInt(0)) throw new Error('Invalid amount');
+
+    setIsLoading(true);
+    try {
+      const { contractAddress, contractName } = splitContractId(CONTRACT_ADDRESSES.morphoReinvest);
+      const result = await openContractCallAsync({
+        network: getStacksNetwork(),
+        appDetails: getAppDetails(),
+        userSession,
+        contractAddress,
+        contractName,
+        functionName: 'reinvest',
+        functionArgs: [uintCV(amount)],
+        anchorMode: AnchorMode.Any,
+        postConditionMode: PostConditionMode.Allow,
+      });
+      return result;
+    } finally {
+      setIsLoading(false);
+    }
   }, [address, userSession]);
 
-  const withdraw = useCallback(async (to: string, amount: bigint) => {
-    if (!address || !userSession) throw new Error('Wallet not connected');
-    // This would use @stacks/connect to sign and broadcast
-    return { to, amount, address };
-  }, [address, userSession]);
+  // No withdraw method exists on-chain for morpho-reinvest.
+  const withdraw = useCallback(async (_to: string, _amount: bigint) => {
+    throw new Error('Withdraw is not supported by morpho-reinvest contract');
+  }, []);
 
   return {
-    getTreasuryBalance,
+    getTotalReinvested,
     deposit,
     withdraw,
     isLoading,

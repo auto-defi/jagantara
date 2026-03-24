@@ -7,49 +7,16 @@
 import {
   callReadOnlyFunction,
   ClarityValue,
-  cvToString,
-  PrincipalCV,
-  UIntCV,
-  BoolCV,
   ResponseCV,
-  TupleCV,
-  getCVTypeString,
+  cvToValue,
 } from '@stacks/transactions';
 import { getNetwork, getApiUrl, CONTRACT_ADDRESSES } from './network';
 
 // Helper to convert Clarity value to JavaScript
+// Prefer cvToValue() to avoid depending on Clarity CV TS types that vary by version.
 export const parseClarityValue = (value: ClarityValue): any => {
   if (!value) return null;
-  
-  const type = getCVTypeString(value);
-  
-  switch (type) {
-    case 'uint':
-      return (value as UIntCV).value;
-    case 'bool':
-      return (value as BoolCV).value;
-    case 'principal':
-      return (value as PrincipalCV).value;
-    case 'response':
-      const response = value as ResponseCV;
-      return {
-        success: response.type === 1,
-        value: parseClarityValue(response.value),
-      };
-    case 'tuple':
-      const tuple = value as TupleCV;
-      const result: Record<string, any> = {};
-      Object.entries(tuple.data).forEach(([key, val]) => {
-        result[key] = parseClarityValue(val);
-      });
-      return result;
-    case 'optional':
-      return value.value ? parseClarityValue(value.value) : null;
-    case 'list':
-      return value.list.map(parseClarityValue);
-    default:
-      return cvToString(value);
-  }
+  return cvToValue(value, true);
 };
 
 // Generic read-only function caller
@@ -65,7 +32,7 @@ export const callReadOnly = async (options: {
       contractName: options.contractAddress.split('.')[1],
       functionName: options.functionName,
       functionArgs: options.functionArgs || [],
-      senderAddress: options.senderAddress,
+      senderAddress: options.senderAddress || '',
       network: getNetwork(),
     });
     

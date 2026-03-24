@@ -4,10 +4,9 @@
  * React hook for wallet connection using @stacks/connect
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   showConnect,
-  createUserSession,
   UserSession,
 } from '@stacks/connect';
 import { APP_DETAILS, AUTH_ORIGIN } from '../lib/stacks/network';
@@ -28,7 +27,33 @@ export const useWallet = (): WalletState => {
   const [isConnecting, setIsConnecting] = useState(false);
 
   // Create user session
-  const userSession = new UserSession();
+  // Note: @stacks/connect v7 does not export createUserSession; construct UserSession directly.
+  const userSession = useMemo(() => new UserSession(), []);
+
+  // Handle successful sign in
+  const handleSignedIn = useCallback(() => {
+    const userData = userSession.loadUserData();
+    setAddress(
+      userData.profile.stxAddress?.testnet ||
+        userData.profile.stxAddress?.mainnet ||
+        ''
+    );
+    // `username` is not always present in Stacks UserData typings; keep nullable.
+    setUsername((userData as any)?.username || null);
+    setIsConnected(true);
+    setIsConnecting(false);
+  }, [userSession]);
+
+  // Handle pending sign in
+  const handlePendingSignIn = useCallback(async () => {
+    try {
+      await userSession.handlePendingSignIn();
+      handleSignedIn();
+    } catch (error) {
+      console.error('Error handling sign in:', error);
+      setIsConnecting(false);
+    }
+  }, [handleSignedIn, userSession]);
 
   // Check if already connected on mount
   useEffect(() => {
@@ -37,27 +62,7 @@ export const useWallet = (): WalletState => {
     } else if (userSession.isUserSignedIn()) {
       handleSignedIn();
     }
-  }, []);
-
-  // Handle pending sign in
-  const handlePendingSignIn = async () => {
-    try {
-      await userSession.handlePendingSignIn();
-      handleSignedIn();
-    } catch (error) {
-      console.error('Error handling sign in:', error);
-      setIsConnecting(false);
-    }
-  };
-
-  // Handle successful sign in
-  const handleSignedIn = () => {
-    const userData = userSession.loadUserData();
-    setAddress(userData.profile.stxAddress?.testnet || userData.profile.stxAddress?.mainnet || '');
-    setUsername(userData.username || null);
-    setIsConnected(true);
-    setIsConnecting(false);
-  };
+  }, [handlePendingSignIn, handleSignedIn, userSession]);
 
   // Connect wallet
   const connect = useCallback(() => {
@@ -74,7 +79,7 @@ export const useWallet = (): WalletState => {
         setIsConnecting(false);
       },
     });
-  }, []);
+  }, [handlePendingSignIn]);
 
   // Disconnect wallet
   const disconnect = useCallback(() => {
@@ -82,7 +87,7 @@ export const useWallet = (): WalletState => {
     setAddress(null);
     setUsername(null);
     setIsConnected(false);
-  }, []);
+  }, [userSession]);
 
   return {
     isConnected,

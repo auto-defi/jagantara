@@ -30,10 +30,24 @@ export const formatNumber = (
  */
 export const formatTokenAmount = (
   amount: bigint | string,
-  tokenSymbol: keyof typeof TOKENS,
+  tokenSymbol: keyof typeof TOKENS | string,
   decimals?: number
 ): string => {
-  const token = TOKENS[tokenSymbol];
+  const normalizedKey = (() => {
+    // Allow callers to pass human-readable symbols (e.g. "USDCx", "sBTC")
+    // and normalize to TOKENS keys.
+    if (tokenSymbol in TOKENS) return tokenSymbol as keyof typeof TOKENS;
+    const s = String(tokenSymbol);
+    if (s === "USDCx") return "USDCX";
+    if (s === "USDC") return "USDC";
+    if (s === "sBTC") return "SBTC";
+    if (s === "STX") return "STX";
+    if (s === "JAGA") return "JAGA";
+    // Fallback to USDCX so UI keeps working even if a symbol drifts.
+    return "USDCX";
+  })();
+
+  const token = TOKENS[normalizedKey];
   const tokenDecimals = decimals || token.decimals;
 
   const value =
