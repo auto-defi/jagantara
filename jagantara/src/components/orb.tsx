@@ -312,7 +312,7 @@ export default function Orb({
       }
       gl?.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, [hue, hoverIntensity, rotateOnHover, forceHoverState]);
+  }, [hue, hoverIntensity, rotateOnHover, forceHoverState, frag, vert]);
 
   return <div ref={ctnDom} className="w-full h-full" />;
 }

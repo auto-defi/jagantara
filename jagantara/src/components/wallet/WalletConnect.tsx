@@ -48,7 +48,6 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
           <button
             onClick={handleDisconnect}
             className="wallet-disconnect-btn"
-            variant="outline"
           >
             Disconnect
           </button>
